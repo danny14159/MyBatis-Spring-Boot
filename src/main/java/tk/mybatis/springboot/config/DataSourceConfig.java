@@ -1,4 +1,4 @@
-package tk.mybatis.springboot.conf;
+package tk.mybatis.springboot.config;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableConfigurationProperties({DruidDataSourceProperties.class})
-public class DataSourceConfiguration {
+public class DataSourceConfig {
 
     /**
      * Druid DataSource

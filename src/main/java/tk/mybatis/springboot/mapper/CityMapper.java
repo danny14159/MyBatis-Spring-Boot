@@ -24,7 +24,7 @@
 
 package tk.mybatis.springboot.mapper;
 
-import tk.mybatis.springboot.model.City;
+import tk.mybatis.springboot.domain.City;
 import tk.mybatis.springboot.util.MyMapper;
 
 /**

@@ -28,7 +28,7 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.springboot.mapper.CountryMapper;
-import tk.mybatis.springboot.model.Country;
+import tk.mybatis.springboot.domain.Country;
 
 import java.util.List;
 

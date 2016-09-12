@@ -22,53 +22,59 @@
  * THE SOFTWARE.
  */
 
-package tk.mybatis.springboot.model;
+package tk.mybatis.springboot.domain;
 
-public class Country extends BaseEntity {
-    /**
-     * 名称
-     */
-    private String countryname;
+/**
+ * mybatis 3.3.1新功能测试使用
+ *
+ * @author liuzh
+ * @since 2016-01-22 22:16
+ */
+public class City2 {
+    private Integer id;
 
-    /**
-     * 代码
-     */
-    private String countrycode;
+    private String cityName;
 
-    /**
-     * 获取名称
-     *
-     * @return countryname - 名称
-     */
-    public String getCountryname() {
-        return countryname;
+    private String cityState;
+
+    public City2() {
     }
 
-    /**
-     * 设置名称
-     *
-     * @param countryname 名称
-     */
-    public void setCountryname(String countryname) {
-        this.countryname = countryname;
+    public City2(String cityName, String cityState) {
+        this.cityName = cityName;
+        this.cityState = cityState;
     }
 
-    /**
-     * 获取代码
-     *
-     * @return countrycode - 代码
-     */
-    public String getCountrycode() {
-        return countrycode;
+    public Integer getId() {
+        return id;
     }
 
-    /**
-     * 设置代码
-     *
-     * @param countrycode 代码
-     */
-    public void setCountrycode(String countrycode) {
-        this.countrycode = countrycode;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public String getCityState() {
+        return cityState;
+    }
+
+    public void setCityState(String cityState) {
+        this.cityState = cityState;
+    }
+
+    @Override
+    public String toString() {
+        return "City2{" +
+                "id=" + id +
+                ", cityName='" + cityName + '\'' +
+                ", cityState='" + cityState + '\'' +
+                '}';
+    }
 }

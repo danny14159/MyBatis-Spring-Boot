@@ -22,28 +22,27 @@
  * THE SOFTWARE.
  */
 
-package tk.mybatis.springboot.model;
+package tk.mybatis.springboot.domain;
+
+import javax.persistence.*;
 
 /**
- * mybatis 3.3.1新功能测试使用
+ * 基础信息
  *
  * @author liuzh
- * @since 2016-01-22 22:16
+ * @since 2016-01-31 21:42
  */
-public class City2 {
+public class BaseEntity {
+    @Id
+    @Column(name = "Id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String cityName;
+    @Transient
+    private Integer page = 1;
 
-    private String cityState;
-
-    public City2() {
-    }
-
-    public City2(String cityName, String cityState) {
-        this.cityName = cityName;
-        this.cityState = cityState;
-    }
+    @Transient
+    private Integer rows = 10;
 
     public Integer getId() {
         return id;
@@ -53,28 +52,19 @@ public class City2 {
         this.id = id;
     }
 
-    public String getCityName() {
-        return cityName;
+    public Integer getPage() {
+        return page;
     }
 
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
+    public void setPage(Integer page) {
+        this.page = page;
     }
 
-    public String getCityState() {
-        return cityState;
+    public Integer getRows() {
+        return rows;
     }
 
-    public void setCityState(String cityState) {
-        this.cityState = cityState;
-    }
-
-    @Override
-    public String toString() {
-        return "City2{" +
-                "id=" + id +
-                ", cityName='" + cityName + '\'' +
-                ", cityState='" + cityState + '\'' +
-                '}';
+    public void setRows(Integer rows) {
+        this.rows = rows;
     }
 }

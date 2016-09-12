@@ -1,4 +1,4 @@
-package tk.mybatis.springboot.conf;
+package tk.mybatis.springboot.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * Created by Administrator on 2016/9/6.
  */
 @Configuration
-public class CorsConfiguration {
+public class CorsConfig {
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {

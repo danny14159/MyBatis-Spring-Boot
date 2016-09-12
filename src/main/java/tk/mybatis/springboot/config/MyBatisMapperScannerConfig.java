@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package tk.mybatis.springboot.conf;
+package tk.mybatis.springboot.config;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;

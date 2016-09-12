@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package tk.mybatis.springboot.model;
+package tk.mybatis.springboot.domain;
 
 /**
  * @author liuzh_3nofxnp

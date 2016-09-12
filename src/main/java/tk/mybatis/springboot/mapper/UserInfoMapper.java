@@ -24,7 +24,7 @@
 
 package tk.mybatis.springboot.mapper;
 
-import tk.mybatis.springboot.model.UserInfo;
+import tk.mybatis.springboot.domain.UserInfo;
 import tk.mybatis.springboot.util.MyMapper;
 
 /**

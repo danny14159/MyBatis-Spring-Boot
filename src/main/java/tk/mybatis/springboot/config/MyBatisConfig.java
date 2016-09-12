@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package tk.mybatis.springboot.conf;
+package tk.mybatis.springboot.config;
 
 import com.github.pagehelper.PageHelper;
 import org.apache.ibatis.plugin.Interceptor;
@@ -59,7 +59,7 @@ public class MyBatisConfig implements TransactionManagementConfigurer {
     public SqlSessionFactory sqlSessionFactoryBean() {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         bean.setDataSource(dataSource);
-        bean.setTypeAliasesPackage("tk.mybatis.springboot.model");
+        bean.setTypeAliasesPackage("tk.mybatis.springboot.domain");
 
         //分页插件
         PageHelper pageHelper = new PageHelper();

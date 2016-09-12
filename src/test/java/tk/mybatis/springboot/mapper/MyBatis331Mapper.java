@@ -25,7 +25,7 @@
 package tk.mybatis.springboot.mapper;
 
 import org.apache.ibatis.annotations.*;
-import tk.mybatis.springboot.model.City2;
+import tk.mybatis.springboot.domain.City2;
 
 import java.util.List;
 

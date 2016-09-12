@@ -30,18 +30,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import tk.mybatis.springboot.model.Country;
 import tk.mybatis.springboot.service.CountryService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuzh
  * @since 2015-12-19 11:10
  */
-@Controller
+@RestController
 @RequestMapping("/countries")
 public class CountryController {
 
@@ -49,13 +52,13 @@ public class CountryController {
     private CountryService countryService;
 
     @RequestMapping
-    public ModelAndView getAll(Country country) {
-        ModelAndView result = new ModelAndView("index");
+    public Object getAll(Country country) {
+        Map result = new HashMap();
         List<Country> countryList = countryService.getAll(country);
-        result.addObject("pageInfo", new PageInfo<Country>(countryList));
-        result.addObject("queryParam", country);
-        result.addObject("page", country.getPage());
-        result.addObject("rows", country.getRows());
+        result.put("pageInfo", new PageInfo<Country>(countryList));
+        result.put("queryParam", country);
+        result.put("page", country.getPage());
+        result.put("rows", country.getRows());
         return result;
     }
 

@@ -27,7 +27,7 @@ spring:
 druid:
     datasource:
         name: test
-        url: jdbc:mysql://192.168.99.100:3306/test
+        url: jdbc:mysql://192.168.99.100:3306/compare
         username: root
         password: admin
 

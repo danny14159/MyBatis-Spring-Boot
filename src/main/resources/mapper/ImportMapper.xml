@@ -29,6 +29,9 @@
     <select id="regionId" resultType="string">
         select id from t_vm_region where region_code=#{region}
     </select>
+    <select id="newRegionCode">
+        SELECT code from region where id = #{id}
+    </select>
     <insert id="insertNatPort" parameterType="map">
         INSERT INTO public_host_nat_port VALUES (#{inner_ip},#{platform},#{port})
     </insert>
@@ -179,15 +182,17 @@
 
     INSERT INTO t_nat_lan_map
     select tmp.`id`, tmp.`create_time`, `create_user`, tmp.`delete_state`, tmp.`update_time`, `update_user`, `lan_host`, `lan_port`, `nat_host`, `nat_ip_id`, `nat_name`,
-        `nat_port`, `nat_type`, `project_id`, `region`, rs.id FROM
+        `nat_port`, `nat_type`, `project_id`, region.code, rs.id FROM
       t_nat_lan_map_tmp tmp
     INNER JOIN resource_status rs on rs.openid = vm_id
+    LEFT JOIN region ON region.id=#{regionId}
         WHERE region=#{region} AND delete_state=0 ;
 
     INSERT INTO t_wlan_lan_map
     SELECT tmp.`id`, tmp.`create_time`, `create_user`, `delete_state`, tmp.`update_time`, `update_user`, `app_context`, rs.id, `lan_host`, `lan_port`,
-        `project_id`, `proto_type`, `wlan_host`, `wlan_lan_id`, `wlan_port`, `region`  from t_wlan_lan_map_tmp tmp
+        `project_id`, `proto_type`, `wlan_host`, `wlan_lan_id`, `wlan_port`, region.code  from t_wlan_lan_map_tmp tmp
         INNER JOIN resource_status rs on rs.openid =tmp.vm_id
+        LEFT JOIN region ON region.id=#{regionId}
         WHERE region=#{region} and delete_state=0 AND proto_type='http' AND tmp.wlan_port=80
         ;
     </insert>
@@ -218,7 +223,7 @@
             UNION ALL
         SELECT concat(host.id,' 主机image关联不到，镜像',host.image_id) from host left join image on image.id = host.image_id AND host.region_id = image.region_id WHERE image.id is null
             UNION ALL
-        SELECT concat(host.id,' 主机flavor关联不到，flavor:',host.flavor_id),host.*,flavor.* from host,flavor where flavor.id = host.flavor_id AND host.region_id=flavor.region_id AND flavor.id is null AND  host.flavor_id is not null
+        SELECT concat(host.id,' 主机flavor关联不到，flavor:',host.flavor_id) from host,flavor where flavor.id = host.flavor_id AND host.region_id=flavor.region_id AND flavor.id is null AND  host.flavor_id is not null
             UNION ALL
         select concat(host.id,' 主机flavor_id为空 ',ifnull(vi.cpu,0),'核',ifnull(vi.memory,0),'G') from host left join t_vm_info vi on vi.id=host.id WHERE flavor_id is null
             UNION ALL
@@ -229,9 +234,6 @@
     </select>
 
     <select id="checkHostImage">
-        SELECT host.id,host.image_id FROM host
-        LEFT JOIN image on image.id=host.image_id
-        WHERE image.id is null
-        GROUP BY (host.id,host.image_id)
+        SELECT DISTINCT(host.image_id) from host left join image on image.id = host.image_id AND host.region_id = image.region_id WHERE image.id is null
     </select>
 </mapper>

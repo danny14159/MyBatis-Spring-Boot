@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ The MIT License (MIT)
+  ~
+  ~ Copyright (c) 2014-2016 abel533@gmail.com
+  ~
+  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+  ~ of this software and associated documentation files (the "Software"), to deal
+  ~ in the Software without restriction, including without limitation the rights
+  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  ~ copies of the Software, and to permit persons to whom the Software is
+  ~ furnished to do so, subject to the following conditions:
+  ~
+  ~ The above copyright notice and this permission notice shall be included in
+  ~ all copies or substantial portions of the Software.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  ~ THE SOFTWARE.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="tk.mybatis.springboot.mapper.ImportMapper">
+
+    <select id="regionId" resultType="string">
+        select id from t_vm_region where region_code=#{region}
+    </select>
+    <insert id="insertNatPort" parameterType="map">
+        INSERT INTO public_host_nat_port VALUES (#{inner_ip},#{platform},#{port})
+    </insert>
+
+    <delete id="clear">
+       delete from disk;
+       delete from resource_status;
+           delete from host_disk;
+           delete from host;
+               delete from classic_network;
+                   delete from nsc_console.user_resource;
+                       delete from  keystore;
+    </delete>
+
+
+    <insert id="importData">
+    INSERT INTO `nsc_console`.`disk` (
+        `id`,
+        `name`,
+        `desc`,
+        `type`,
+        `capacity`,
+        `buytime`,
+        `tag_name`,
+        `user_id`,
+        `openid`,
+        `create_time`,
+        `region_id`,
+        `update_time`,
+        `expire_time`,
+        `no`,
+        `delete_flag`,
+        `version`,
+        `begin_time`
+    )
+    select
+    vv.id,ifnull( (select vm_name from t_vm_info vi where vi.id= vv.vm_id) , '默认硬盘'),
+    '旧版硬盘',2,volume_size, -1 ,null,pu.user_Id,
+    tvr.x_volumn_id,vv.create_time,
+        #{regionId},
+    vv.update_time,concat(vi.end_time,' 23:59:59'),null,0,'v2',
+    ifnull(vi.service_begin_time,vi.create_time) as begin_time
+    from t_vm_volume vv
+    left join t_vm_info vi on vv.vm_id=vi.id
+    inner join t_platform_user pu on pu.login_name=vv.create_user
+    INNER join t_volume_relation tvr on tvr.step_id=vv.id
+    where vv.delete_state = 0 and vv.attach_status='attached' and vv.region=#{region}
+    AND tvr.delete_state = 0
+    <if test="region=='sh1'">
+        and vi.region_type=#{regionType}
+    </if>
+    ;
+
+    INSERT INTO `nsc_console`.`resource_status` (`id`, `openid`, `self_status`, `used`)
+    select disk.id,vr.x_volumn_id,1,2
+    from disk
+    left join t_volume_relation vr on vr.step_id=disk.id AND vr.delete_state = 0;
+
+    INSERT INTO `nsc_console`.`host_disk` (`host_id`, `disk_id`, `volumn_name`,
+        `create_time`, `update_time`, `no`, `status`)
+    select vv.vm_id,disk.id,ifnull(vv.device_name,'No Value'),disk.create_time,disk.update_time,null,1
+    from disk
+    LEFT JOIN t_vm_volume vv on vv.id=disk.id
+    LEFT JOIN t_vm_info vi on vv.vm_id=vi.id;
+
+    <!-- 主机迁移keystore,classic_network,host,resource_status,user_resource,quota_config -->
+
+    INSERT INTO `nsc_console`.`host` (`id`, `region_id`, `name`, `network_type`,
+        `image_id`, `security_type`, `password`, `keystore_id`, `buytime`, `user_id`, `openid`,
+        `create_time`, `update_time`, `expire_time`, `no`, `public_ip_id`, `delete_flag`,
+        `flavor_id`, `zone`, `desc`, `type`, `version` , `begin_time`)
+    select vi.id, #{regionId},vi.vm_name,1,vi.image_id,(
+    case tmp.type when 'publicKey' then 2 when 'password' then 1 end
+    ) as security_type,tmp.`password`,
+    (SELECT kp.id from t_keypair_password kp where kp.certification_type = 'publicKey' and kp.vm_id = vi.id limit 1) as keystore_id,
+    -1,pu.user_id,xr.vm_id as openid,vi.create_time,vi.update_time,concat(vi.end_time,' 23:59:59') as expire_time,null as no,null as public_ip_id,0,
+    (select id from flavor fl WHERE fl.cpu=vi.cpu and fl.memory=vi.memory and fl.region_id=#{regionId} AND test = '1')
+    as flavor_id,
+    null as zone,
+    '旧版主机' as `desc`,2 as type,'v2' as version,
+    ifnull(vi.service_begin_time,vi.create_time) as begin_time
+    from  t_vm_info vi
+    inner join t_platform_user pu on pu.login_name=vi.create_user
+    inner join tmp_vm_security tmp on tmp.id = vi.id
+    inner join t_vm_x_relation xr on xr.step_vm_id = vi.id
+    where vi.region = #{region} and vi.delete_state = 0 and pu.user_Id is not null AND vi.vm_state is not null
+    <if test="region=='sh1'">
+        and vi.region_type=#{regionType}
+    </if>
+    ;
+
+    INSERT INTO `nsc_console`.`classic_network` (`id`, `host_id`, `ip`, `create_time`, `update_time`, `no`, `delete_flag`)
+    select null,vi.id,vi.vm_ip,create_time,update_time,null,0
+    from t_vm_info vi
+    where vi.delete_state = 0 and vi.region=#{region}
+        <if test="region=='sh1'">
+            and vi.region_type=#{regionType}
+        </if>
+      ;
+
+    INSERT INTO `nsc_console`.`resource_status` (`id`, `openid`, `self_status`, `used`)
+    select vi.id,vr.vm_id,1,1
+    from host vi
+    LEFT join t_vm_x_relation vr on vr.step_vm_id = vi.id;
+
+
+    INSERT INTO `nsc_console`.`keystore` (`id`, `name`, `type`, `encrypt_mode`, `public_key`, `create_time`,
+     `update_time`, `no`, `desc`, `user_id`, `delete_flag`)
+    select tmp.id,'旧版主机密钥',
+    1,1,tmp.public_key,vi.create_time,vi.update_time,null,null,tu.user_Id,0
+    from tmp_vm_security tmp
+    inner join t_vm_info vi on vi.id=tmp.id
+    inner join t_platform_user tu on tu.login_name = vi.create_user
+    WHERE tmp.type = 'publicKey'
+    and vi.delete_state = 0 and vi.region=#{region}
+    <if test="region=='sh1'">
+        and vi.region_type=#{regionType}
+    </if>
+    ;
+
+    <!-- 进行配额统计 -->
+
+    INSERT INTO `nsc_console`.`user_resource` (
+        `id`,
+        `user_id`,
+        `region_id`,
+        `name`,
+        `value`,
+        `create_time`,
+        `update_time`,
+        `no`,
+        `delete_flag`
+    )
+    SELECT uuid(),user_id,#{regionId},'host',count(1),now(),now(),null,0 from  host GROUP BY user_id
+    UNION ALL
+    SELECT uuid(),user_id,#{regionId},'cpu',ifnull(sum(flavor.cpu),0),now(),now(),null,0 from  host
+    left join flavor on host.flavor_id = flavor.id GROUP BY user_id
+    UNION ALL
+    SELECT uuid(),user_id,#{regionId},'memory',ifnull(sum(flavor.memory),0),now(),now(),null,0 from  host
+    left join flavor on host.flavor_id = flavor.id GROUP BY user_id
+    UNION ALL
+    SELECT uuid(),user_id,#{regionId},'sshKeyStore',count(1),now(),now(),null,0 from  keystore GROUP BY user_id
+    UNION ALL
+    SELECT uuid(),user_id,#{regionId},'capacityDisk',count(1),now(),now(),null,0 from  disk GROUP BY user_id
+    UNION ALL
+    SELECT uuid(),user_id,#{regionId},'capacityDiskCapacity',sum(capacity),now(),now(),null,0 from  disk GROUP BY user_id
+    ;
+
+    INSERT INTO t_nat_lan_map
+    select tmp.`id`, tmp.`create_time`, `create_user`, tmp.`delete_state`, tmp.`update_time`, `update_user`, `lan_host`, `lan_port`, `nat_host`, `nat_ip_id`, `nat_name`,
+        `nat_port`, `nat_type`, `project_id`, `region`, rs.id FROM
+      t_nat_lan_map_tmp tmp
+    INNER JOIN resource_status rs on rs.openid = vm_id
+        WHERE region=#{region} AND delete_state=0 ;
+
+    INSERT INTO t_wlan_lan_map
+    SELECT tmp.`id`, tmp.`create_time`, `create_user`, `delete_state`, tmp.`update_time`, `update_user`, `app_context`, rs.id, `lan_host`, `lan_port`,
+        `project_id`, `proto_type`, `wlan_host`, `wlan_lan_id`, `wlan_port`, `region`  from t_wlan_lan_map_tmp tmp
+        INNER JOIN resource_status rs on rs.openid =tmp.vm_id
+        WHERE region=#{region} and delete_state=0 AND proto_type='http' AND tmp.wlan_port=80
+        ;
+    </insert>
+
+    <delete id="deleteMapTmp">
+        DELETE FROM t_wlan_lan_map_tmp;
+        DELETE FROM t_nat_lan_map_tmp;
+    </delete>
+
+    <delete id="deleteMap">
+        DELETE FROM t_nat_lan_map;
+        DELETE FROM t_wlan_lan_map;
+    </delete>
+
+    <insert id="dumpMap">
+        INSERT INTO t_wlan_lan_map_tmp
+        SELECT * from t_wlan_lan_map;
+        INSERT INTO t_nat_lan_map_tmp
+        SELECT * FROM t_nat_lan_map;
+    </insert>
+
+    <delete id="deleteNatPort">
+        DELETE from public_host_nat_port;
+    </delete>
+
+    <select id="verifyData" resultType="string">
+        select concat(id,' 主机image_id为空') from host WHERE image_id is null
+            UNION ALL
+        SELECT concat(host.id,' 主机image关联不到，镜像',host.image_id) from host left join image on image.id = host.image_id AND host.region_id = image.region_id WHERE image.id is null
+            UNION ALL
+        SELECT concat(host.id,' 主机flavor关联不到，flavor:',host.flavor_id),host.*,flavor.* from host,flavor where flavor.id = host.flavor_id AND host.region_id=flavor.region_id AND flavor.id is null AND  host.flavor_id is not null
+            UNION ALL
+        select concat(host.id,' 主机flavor_id为空 ',ifnull(vi.cpu,0),'核',ifnull(vi.memory,0),'G') from host left join t_vm_info vi on vi.id=host.id WHERE flavor_id is null
+            UNION ALL
+        select concat(id,' 主机openid为空') from host WHERE openid is null
+        UNION ALL
+        SELECT concat(id,' 硬盘openid为空') FROM disk WHERE openid is null
+        ;
+    </select>
+
+    <select id="checkHostImage">
+        SELECT host.id,host.image_id FROM host
+        LEFT JOIN image on image.id=host.image_id
+        WHERE image.id is null
+        GROUP BY (host.id,host.image_id)
+    </select>
+</mapper>

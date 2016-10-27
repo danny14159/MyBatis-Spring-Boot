@@ -1,7 +1,13 @@
 package tk.mybatis.springboot.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jdk.internal.util.xml.impl.Input;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -9,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
+import tk.mybatis.springboot.domain.City;
 import tk.mybatis.springboot.mapper.ImportMapper;
 
 import java.io.BufferedReader;
@@ -24,9 +34,12 @@ import java.util.*;
 @Controller
 @RequestMapping("/import")
 @Transactional
+@Slf4j
 public class ImportController {
     @Autowired
     private ImportMapper importMapper;
+    @Autowired
+    private RestTemplate restTemplate;
 
     private int begionPort=46001;
 
@@ -61,7 +74,7 @@ public class ImportController {
 
         Runtime runtime = Runtime.getRuntime();
         if(null == rt) rt= "";
-        String cmd = "\"C:\\Program Files\\MySQL\\MySQL Server 5.7\\bin\\mysqldump\" -h 192.168.99.100 -P 3307 -uroot -padmin nsc_console disk host classic_network user_resource resource_status host_disk t_nat_lan_map t_wlan_lan_map keystore --result-file=C:\\Users\\Administrator\\Desktop\\dump\\"+r+rt+".sql";
+        String cmd = "\"C:\\Program Files\\MySQL\\MySQL Server 5.7\\bin\\mysqldump\" -h 192.168.99.100 -P 3307 -uroot -padmin nsc_console disk host classic_network user_resource resource_status host_disk t_nat_lan_map t_wlan_lan_map keystore notification_message --result-file=C:\\Users\\Administrator\\Desktop\\dump\\"+r+rt+".sql";
         Process process = runtime.exec(cmd);
 
 
@@ -193,7 +206,26 @@ public class ImportController {
             }
             begionPort ++ ;
         }
+    }
 
+    @RequestMapping("/409")
+    @ResponseBody
+    public Object test409(){
+        return new ResponseEntity(new City("name","status"),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
+    @RequestMapping("/test/409")
+    @ResponseBody
+    public Object testRestTemplate() throws Exception{
+
+        ResponseEntity<City> result= null;
+        try {
+            result = restTemplate.exchange("http://localhost:8082/import/409", HttpMethod.GET, null, City.class);
+        }
+        catch (HttpStatusCodeException e){
+            City city = new ObjectMapper().readValue(e.getResponseBodyAsString(),City.class);
+            return city;
+        }
+        return result.getBody();
     }
 }

@@ -24,29 +24,20 @@
 
 package tk.mybatis.springboot.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * @author liuzh_3nofxnp
  * @since 2016-01-22 22:16
  */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class City extends BaseEntity {
     private String name;
 
     private String state;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
 
 }

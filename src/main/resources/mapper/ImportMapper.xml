@@ -123,35 +123,35 @@
     </if>
     ;
     <!-- 保存主机邮件 -->
-    INSERT INTO `nsc_console`.`notification_message` (`id`, `message`, `create_time`, `update_time`, `delete_flag`)
-    SELECT host.id,ifnull(
+    INSERT INTO `nsc_console`.`notification_message` (`type` ,`id`, `message`, `create_time`, `update_time`, `delete_flag`)
+    SELECT 4,host.id,ifnull(
         CASE image.os_platform WHEN 'windows' THEN
         concat(
         <![CDATA[
-        '</br>尊敬的客户，您好：恭喜您于',host.begin_time,'在新致云成功开通云主机 ',host.name,'资源，感谢您选择新致云，祝您使用愉快。</br>',
-        '<br>您申请的云主机为 ',image.os_platform,' 主机，远程连接步骤如下：</br>',
-        '<br>1、Windows操作系统通常内置了远程桌面连接软件，在命令行窗口输入：mstsc</br>',
-        '<br>2、在弹出窗口对应输入以下信息：</br>',
-        '<br>计算机: ',host.name,'.',vi.region,'.newtouch.com:',vi.port,'</br>',
-        '<br>用户名: administrator</br>',
-        '<br>点击窗口下方的“连接”按钮。</br>',
-        '<br>3、在密码框中输入您创建云主机时设置的密码。</br>',
-        '<br>4、恭喜您，您已经成功连接到云主机。</br>'
+        '</br>尊敬的客户，您好：<br/>    恭喜您于',host.begin_time,'在新致云成功开通云主机 ',host.name,' 资源，感谢您选择新致云，祝您使用愉快。</br>',
+        '<br>    您申请的云主机为 ',image.os_platform,' 主机，远程连接步骤如下：</br>',
+        '<br>        1、Windows操作系统通常内置了远程桌面连接软件，在命令行窗口输入：mstsc</br>',
+        '<br>        2、在弹出窗口对应输入以下信息：</br>',
+        '<br>            计算机: ',host.name,'.',vi.region,if(vi.region_type='b','b',''),'.newtouch.com:',vi.port,'</br>',
+        '<br>            用户名: administrator</br>',
+        '<br>            点击窗口下方的“连接”按钮。</br>',
+        '<br>        3、在密码框中输入您创建云主机时设置的密码。</br>',
+        '<br>        4、恭喜您，您已经成功连接到云主机。</br>'
         ]]>) WHEN 'linux' THEN
         concat(
         <![CDATA[
-        '<br>尊敬的客户，您好： 恭喜您于',host.begin_time,'在新致云成功开通云主机  ',host.name,' 资源，感谢您选择新致云，祝您使用愉快。</br>',
-        '<br>您申请的云主机为 ',image.os_platform,' 主机，远程连接步骤如下：</br>',
-        '<br>1、Linux 操作系统下访问云服务器需要先安装ssh客户端软件，如：SecureCRT。</br>',
-        '<br>2、启动ssh客户端软件，在配置窗口对应输入以下信息：</br>',
-        '<br>Protocol : SSH2</br>',
-        '<br>Hostname : ',host.name,'.',vi.region,'.newtouch.com:',vi.port,'</br>',
-        '<br>Port : ',vi.port,'</br>',
-        '<br>Username : root</br>',
-        '<br>选择密钥方式连接的云主机，请选择加载密钥的路径: Publickey - Properties</br>',
-        '<br>3、点击窗口下方的“连接”按钮。</br>',
-        '<br>4、非密钥方式连接的云主机，直接在密码框中输入您创建云主机时设置的密码。</br>',
-        '<br>5、恭喜您，您已经成功连接到云主机。</br>'
+        '<br>尊敬的客户，您好： <br/>    恭喜您于',host.begin_time,'在新致云成功开通云主机  ',host.name,' 资源，感谢您选择新致云，祝您使用愉快。</br>',
+        '<br>    您申请的云主机为 ',image.os_platform,' 主机，远程连接步骤如下：</br>',
+        '<br>        1、Linux 操作系统下访问云服务器需要先安装ssh客户端软件，如：SecureCRT。</br>',
+        '<br>        2、启动ssh客户端软件，在配置窗口对应输入以下信息：</br>',
+        '<br>            Protocol : SSH2</br>',
+        '<br>            Hostname : ',host.name,'.',vi.region,if(vi.region_type='b','b',''),'.newtouch.com:',vi.port,'</br>',
+        '<br>            Port : ',vi.port,'</br>',
+        '<br>            Username : root</br>',
+        '<br>            选择密钥方式连接的云主机，请选择加载密钥的路径: Publickey - Properties</br>',
+        '<br>        3、点击窗口下方的“连接”按钮。</br>',
+        '<br>        4、非密钥方式连接的云主机，直接在密码框中输入您创建云主机时设置的密码。</br>',
+        '<br>        5、恭喜您，您已经成功连接到云主机。</br>'
         ]]>) END ,'')
         ,host.begin_time,host.update_time,host.delete_flag FROM host
         LEFT JOIN image on image.id=host.image_id AND image.region_id = host.region_id

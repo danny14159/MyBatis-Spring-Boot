@@ -146,7 +146,7 @@
         '<br>        1、Windows 操作系统下访问云服务器需要先安装ssh客户端软件，如：SecureCRT。</br>',
         '<br>        2、启动ssh客户端软件，在配置窗口对应输入以下信息：</br>',
         '<br>            Protocol : SSH2</br>',
-        '<br>            Hostname : ',host.name,'.',vi.region,if(vi.region_type='b','b',''),'.newtouch.com:',vi.port,'</br>',
+        '<br>            Hostname : ',host.name,'.',vi.region,if(vi.region_type='b','b',''),'.newtouch.com</br>',
         '<br>            Port : ',vi.port,'</br>',
         '<br>            Username : root</br>',
         '<br>            选择密钥方式连接的云主机，请选择加载密钥的路径: Publickey - Properties</br>',

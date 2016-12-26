@@ -24,8 +24,13 @@
 
 package tk.mybatis.springboot.util;
 
+import org.apache.ibatis.annotations.UpdateProvider;
+import org.apache.ibatis.mapping.MappedStatement;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.common.MySqlMapper;
+import tk.mybatis.mapper.mapperhelper.MapperHelper;
+import tk.mybatis.mapper.mapperhelper.MapperTemplate;
+import tk.mybatis.mapper.mapperhelper.SqlHelper;
 
 /**
  * 继承自己的MyMapper
@@ -36,4 +41,10 @@ import tk.mybatis.mapper.common.MySqlMapper;
 public interface MyMapper<T> extends Mapper<T>, MySqlMapper<T> {
     //TODO
     //FIXME 特别注意，该接口不能被扫描到，否则会出错
+
+    @UpdateProvider(type = UpdateFlagProvider.class, method = "dynamicSQL")
+    int updateFlagByPrimayKey(Object key);
+
+
+
 }

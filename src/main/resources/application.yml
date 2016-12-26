@@ -2,7 +2,7 @@ server:
     port: ${port:80}
 logging:
     level:
-        tk.mybatis: DEBUG
+#        tk.mybatis: DEBUG
 spring:
   profiles:
     active: ${active:dev}
@@ -24,10 +24,15 @@ spring:
       freemarker:
           cache: false
           request-context-attribute: request
+    rabbitmq:
+      host: 192.168.99.100
+      port: 5672
+      username: nsc
+      password: newtouch
 druid:
     datasource:
         name: test
-        url: jdbc:mysql://192.168.99.100:3307/nsc_console?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true
+        url: jdbc:mysql://192.168.99.100:3306/test?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true
         username: root
         password: admin
 

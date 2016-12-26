@@ -24,12 +24,20 @@
 
 package tk.mybatis.springboot.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import tk.mybatis.springboot.ampq.BaseReceiveMessage;
+import tk.mybatis.springboot.ampq.MessageEntity;
 import tk.mybatis.springboot.domain.City;
 import tk.mybatis.springboot.service.CityService;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,6 +50,8 @@ public class CityController {
 
     @Autowired
     private CityService cityService;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @RequestMapping
     public PageInfo<City> getAll(City city) {
@@ -49,4 +59,11 @@ public class CityController {
         return new PageInfo<City>(countryList);
     }
 
+    @RequestMapping("/msg")
+    public Object testMessage(String m) throws Exception{
+        BaseReceiveMessage baseReceiveMessage = new BaseReceiveMessage(null,200, Collections.singletonMap("message",m));
+
+        rabbitTemplate.convertAndSend("host","create",baseReceiveMessage);
+        return baseReceiveMessage;
+    }
 }

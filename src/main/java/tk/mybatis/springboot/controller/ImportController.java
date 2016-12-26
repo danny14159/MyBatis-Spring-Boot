@@ -41,7 +41,7 @@ public class ImportController {
     @Autowired
     private RestTemplate restTemplate;
 
-    private int begionPort=46001;
+    private int begionPort=48501 ;
 
    /*
     public Object importData() throws Exception{
@@ -148,65 +148,34 @@ public class ImportController {
     @RequestMapping("/ins")
     public String insertNatPort(){
         importMapper.deleteNatPort();
-        /*_insertNatPort("172.28.0.",45001,45254,"linux",1);
-        _insertNatPort("172.28.0.",45255,45508,"windows",1);
-        _insertNatPort("172.28.1.",45509,45762 ,"linux",1);
-        _insertNatPort("172.28.1.",45763 ,46016 ,"windows",1);
 
-        _insertNatPort("172.28.2.",46270  ,46522  ,"linux",2);
-        _insertNatPort("172.28.2.",46523  ,46775  ,"windows",2);
-        _insertNatPort("172.28.3.",46776  ,46016 ,"linux",2);
-        _insertNatPort("172.28.3.",47029  ,47281  ,"windows",2);
-        _insertNatPort("172.28.4.",47282  ,47534  ,"linux",2);
-        _insertNatPort("172.28.4.",47535  ,47787  ,"windows",2);*/
-        /*_insertNatPort("172.23.64.",45001,45252,"linux",2);
-        _insertNatPort("172.23.64.",45253,45504,"windows",2);
-        _insertNatPort("172.23.65.",45505,45756,"linux",2);
-        _insertNatPort("172.23.65.",45757,46008,"windows",2);
-        _insertNatPort("172.23.67.",46009,46260,"linux",2);
-        _insertNatPort("172.23.67.",46261,46512,"windows",2);
-        _insertNatPort("172.23.68.",46513,46764,"linux",2);
-        _insertNatPort("172.23.68.",46765,47016,"windows",2);
-        _insertNatPort("172.23.70.",47017,47268,"linux",2);
-        _insertNatPort("172.23.70.",47269,47520,"windows",2);
-        _insertNatPort("172.23.71.",47521,47772,"linux",2);
-        _insertNatPort("172.23.71.",47773,48024,"windows",2);
-        _insertNatPort("172.23.66.",48025,48276,"linux",2);
-        _insertNatPort("172.23.66.",48277,48528,"windows",2);
-        _insertNatPort("172.23.72.",48529,48780,"linux",2);
-        _insertNatPort("172.23.72.",48781,49032,"windows",2);
-        _insertNatPort("172.23.73.",49033,49284,"linux",2);
-        _insertNatPort("172.23.73.",49285,49536,"windows",2);*/
-
-        _insertNatPort("172.21.1.");
-        _insertNatPort("172.21.2.");
-        _insertNatPort("172.21.3.");
-        _insertNatPort("172.21.4.");
-        _insertNatPort("172.21.5.");
-        _insertNatPort("172.21.6.");
+        _insertNatPort("172.28.11.");
+        _insertNatPort("172.28.12.");
+        _insertNatPort("172.28.13.");
+        _insertNatPort("172.28.14.");
+        _insertNatPort("172.28.15.");
         System.out.println(begionPort);
         return "success";
     }
 
     public void _insertNatPort(String inner_ip){
         Map map = new HashMap<>();
-        for(int i = 0;i<252 + 252;i++){
-            int netAdd = i/2;
-            if(i%2 == 0){
-                map.put("inner_ip",inner_ip+(netAdd+2));
+        for(int i = 1;i<=253;i++){
+                map.put("inner_ip",inner_ip+(i));
                 map.put("port",begionPort);
                 map.put("platform","linux");
                 importMapper.insertNatPort(map);
-            }
-            else {
-                map.put("inner_ip", inner_ip + (netAdd + 2));
-                map.put("port", begionPort);
-                map.put("platform", "windows");
-                importMapper.insertNatPort(map);
-            }
             begionPort ++ ;
         }
+        for(int i = 1;i<=253;i++) {
+            map.put("inner_ip", inner_ip + (i));
+            map.put("port", begionPort);
+            map.put("platform", "windows");
+            importMapper.insertNatPort(map);
+            begionPort++;
+        }
     }
+
 
     @RequestMapping("/409")
     @ResponseBody

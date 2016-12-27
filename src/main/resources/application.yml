@@ -6,7 +6,7 @@ logging:
 spring:
   profiles:
     active: ${active:dev}
-debug: true
+#debug: true
 ---
 
 spring:

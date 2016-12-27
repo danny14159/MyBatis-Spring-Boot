@@ -1,5 +1,6 @@
 package tk.mybatis.springboot.config;
 
+import org.aopalliance.aop.Advice;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
@@ -9,6 +10,8 @@ import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.*;
+import org.springframework.aop.MethodBeforeAdvice;
+import org.springframework.aop.ThrowsAdvice;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +20,7 @@ import tk.mybatis.springboot.ampq.BaseReceiveMessage;
 import tk.mybatis.springboot.ampq.MessageEntity;
 
 import java.io.BufferedReader;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 
@@ -24,7 +28,6 @@ import java.util.HashMap;
  * Created by Administrator on 2016/12/23.
  */
 @Configuration
-@EnableRabbit
 public class AmpqConfiguration implements RabbitListenerConfigurer{
 
     @Bean
@@ -52,8 +55,14 @@ public class AmpqConfiguration implements RabbitListenerConfigurer{
         container.setQueueNames(
                 "host"
         );
+       /* container.setAdviceChain(new Advice[]{
+                (MethodBeforeAdvice) (method, args, target) ->
+
+                    System.out.println(method.getName())
+
+        });*/
         container.setMessageConverter(jackson2JsonMessageConverter());
-        container.setMessageListener(listenerAdapter());
+        //container.setMessageListener(listenerAdapter());
         return container;
     }
 

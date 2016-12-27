@@ -22,6 +22,8 @@ public class MyBean implements ApplicationRunner{
     @Override
     public void run(ApplicationArguments applicationArguments) throws Exception {
         log.info("second"+name);
+        log.error(new Exception("系统错误").getLocalizedMessage());
+
     }
 
     @PostConstruct

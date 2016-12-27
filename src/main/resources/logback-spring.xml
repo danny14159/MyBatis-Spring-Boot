@@ -3,7 +3,7 @@
 
     <contextName>myAppName</contextName>
 
-    <property name="log.path" value="D:/log1"/>
+<property name="logging.path" value="D:/log1"/>
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -22,9 +22,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <file>${log.path}.info.log</file>
+        <file>${logging.path}.info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.path}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${logging.path}.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -40,9 +40,9 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <file>${log.path}.err.log</file>
+        <file>${logging.path}.err.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.path}.error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${logging.path}.error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>

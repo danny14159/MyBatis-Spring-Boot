@@ -28,6 +28,6 @@ public class TestService {
             value = @Queue(value = "host", durable = "true"), key = "create"))
     public void testReceiveMessage(BaseReceiveMessage baseReceiveMessage) {
 
-        System.out.println(baseReceiveMessage.getData().get("message"));
+        System.out.println(baseReceiveMessage.getData().getMessage());
     }
 }

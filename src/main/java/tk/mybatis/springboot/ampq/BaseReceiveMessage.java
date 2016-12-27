@@ -15,5 +15,4 @@ import java.util.Map;
 public class BaseReceiveMessage {
     private String message;
     private Integer code;
-    private Map data;
 }

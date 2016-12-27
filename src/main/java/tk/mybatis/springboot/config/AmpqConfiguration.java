@@ -53,7 +53,7 @@ public class AmpqConfiguration implements RabbitListenerConfigurer{
                 "host"
         );
         container.setMessageConverter(jackson2JsonMessageConverter());
-        //container.setMessageListener(listenerAdapter);
+        container.setMessageListener(listenerAdapter());
         return container;
     }
 
@@ -77,17 +77,15 @@ public class AmpqConfiguration implements RabbitListenerConfigurer{
     }
 
 
-  /*  @Bean
+    @Bean
     MessageListenerAdapter listenerAdapter() {
         return new MessageListenerAdapter(new MessageListener() {
             @Override
             public void onMessage(Message message) {
                 System.out.println(new String(message.toString()));
-                message.toString();
             }
-
         });
-    }*/
+    }
 
     @Override
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {

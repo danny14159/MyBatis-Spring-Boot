@@ -1,7 +1,7 @@
 server:
     port: ${port:80}
 logging:
-    level:
+    file: D:/log/spring.log
 #        tk.mybatis: DEBUG
 spring:
   profiles:

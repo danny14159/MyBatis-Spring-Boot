@@ -32,7 +32,7 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import tk.mybatis.springboot.ampq.BaseReceiveMessage;
+import tk.mybatis.springboot.ampq.data.BaseReceiveMessage;
 import tk.mybatis.springboot.ampq.MessageEntity;
 import tk.mybatis.springboot.domain.City;
 import tk.mybatis.springboot.service.CityService;
@@ -61,7 +61,7 @@ public class CityController {
 
     @RequestMapping("/msg")
     public Object testMessage(String m) throws Exception{
-        BaseReceiveMessage baseReceiveMessage = new BaseReceiveMessage(null,200, Collections.singletonMap("message",m));
+        BaseReceiveMessage baseReceiveMessage = new BaseReceiveMessage(new BaseReceiveMessage.Msg(m));
 
         rabbitTemplate.convertAndSend("host","create",baseReceiveMessage);
         return baseReceiveMessage;

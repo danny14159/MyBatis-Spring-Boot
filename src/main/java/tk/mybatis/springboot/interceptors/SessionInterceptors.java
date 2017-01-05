@@ -18,6 +18,7 @@ public class SessionInterceptors implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
         log.info(ServerUtil.getRequestString(httpServletRequest));
         log.info("preHandle thread id:{}",Thread.currentThread().getId());
+        httpServletRequest.setAttribute("startTime",System.currentTimeMillis());
         return true;
     }
 

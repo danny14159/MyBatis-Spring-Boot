@@ -161,8 +161,8 @@
     ;
 
     INSERT INTO `nsc_console`.`classic_network` (`id`, `host_id`, `ip`, `create_time`, `update_time`, `no`, `delete_flag`)
-    select null,vi.id,vi.vm_ip,create_time,update_time,null,0
-    from t_vm_info vi
+        select null,vi.id,vi.vm_ip,create_time,update_time,null,0
+        from t_vm_info vi
     where vi.delete_state = 0 and vi.region=#{region}
         <if test="region=='sh1'">
             and vi.region_type=#{regionType}

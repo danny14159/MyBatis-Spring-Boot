@@ -28,6 +28,7 @@ import IceInternal.Ex;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageProperties;
@@ -38,6 +39,9 @@ import org.springframework.context.*;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResultUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -60,7 +64,7 @@ import java.util.Map;
  * @author liuzh
  * @since 2015-12-19 11:10
  */
-@RestController
+@Controller
 @RequestMapping("/cities")
 public class CityController implements EnvironmentAware,ApplicationContextAware,MessageSourceAware{
     Environment environment;
@@ -72,6 +76,10 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
     private CityService cityService;
     @Autowired
     private RabbitTemplate rabbitTemplate;
+    @InitBinder
+    public void initBinder(WebDataBinder webDataBinder){
+        webDataBinder.getValidators();
+    }
 
     @RequestMapping
     public PageInfo<City> getAll(City city) {
@@ -111,9 +119,12 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
 
     @RequestMapping("/some")
     @ResponseBody
-    public Object someTest(HttpServletRequest request) throws Exception{
-        return WebUtils.getRealPath(request.getServletContext(),"/my");
+    public Object someTest(@Validated City p, HttpServletRequest request) throws Exception{
+        return new City("城市名","state");
+        //return WebUtils.getRealPath(request.getServletContext(),"/my");
     }
+
+
 
     @Override
     public void setEnvironment(Environment environment) {

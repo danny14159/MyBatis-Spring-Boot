@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -12,7 +15,7 @@ import tk.mybatis.springboot.util.ServerUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Enumeration;
+import java.util.List;
 
 /**
  * 全局异常处理
@@ -27,10 +30,19 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public Object exception(HttpServletRequest httpServletRequest, HttpServletResponse response, Exception ex) {
-        ex.printStackTrace();
+        log.error(ex.getMessage());
+        String message = ex.getMessage();
+        if(ex instanceof BindException){
+            message = "";
+            BindException bindException = (BindException)ex;
+            List<ObjectError> allErrors = bindException.getAllErrors();
+            for(ObjectError objectError:allErrors){
+                message += ((FieldError)objectError).getField()+objectError.getDefaultMessage()+";";
+            }
+        }
         log.info(ServerUtil.getRequestString(httpServletRequest));
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return new ReturnMessage(ex.getMessage(),response.getStatus(),false);
+        return new ReturnMessage(message,response.getStatus(),false);
     }
 
 }

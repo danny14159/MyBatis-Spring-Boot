@@ -27,6 +27,7 @@ package tk.mybatis.springboot.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * @author liuzh_3nofxnp
@@ -36,6 +37,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class City extends BaseEntity {
+    @NotBlank
     private String name;
 
     private String state;

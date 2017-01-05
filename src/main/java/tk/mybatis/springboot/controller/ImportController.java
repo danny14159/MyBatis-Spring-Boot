@@ -1,31 +1,23 @@
 package tk.mybatis.springboot.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jdk.internal.util.xml.impl.Input;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import tk.mybatis.springboot.domain.City;
 import tk.mybatis.springboot.mapper.ImportMapper;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -41,7 +33,7 @@ public class ImportController {
     @Autowired
     private RestTemplate restTemplate;
 
-    private int begionPort=48501 ;
+    private int beginPort =49537  ;
 
    /*
     public Object importData() throws Exception{
@@ -149,30 +141,27 @@ public class ImportController {
     public String insertNatPort(){
         importMapper.deleteNatPort();
 
-        _insertNatPort("172.28.11.");
-        _insertNatPort("172.28.12.");
-        _insertNatPort("172.28.13.");
-        _insertNatPort("172.28.14.");
-        _insertNatPort("172.28.15.");
-        System.out.println(begionPort);
+        _insertNatPort("172.23.222.");
+
+        System.out.println(beginPort);
         return "success";
     }
 
     public void _insertNatPort(String inner_ip){
         Map map = new HashMap<>();
-        for(int i = 1;i<=253;i++){
+        for(int i = 2;i<=253;i++){
                 map.put("inner_ip",inner_ip+(i));
-                map.put("port",begionPort);
+                map.put("port", beginPort);
                 map.put("platform","linux");
                 importMapper.insertNatPort(map);
-            begionPort ++ ;
+            beginPort++ ;
         }
-        for(int i = 1;i<=253;i++) {
+        for(int i = 2;i<=253;i++) {
             map.put("inner_ip", inner_ip + (i));
-            map.put("port", begionPort);
+            map.put("port", beginPort);
             map.put("platform", "windows");
             importMapper.insertNatPort(map);
-            begionPort++;
+            beginPort++;
         }
     }
 

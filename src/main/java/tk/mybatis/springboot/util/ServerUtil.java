@@ -34,10 +34,6 @@ public class ServerUtil {
             request = getHttpServletRequest();
         }
         try{
-            Enumeration<String> parameterNames = request.getParameterNames();
-            while (parameterNames.hasMoreElements()){
-                log.info(objectMapper.writeValueAsString(parameterNames.nextElement()));
-            }
             return "Path:"+request.getRequestURI()+",Parameters:"+objectMapper.writeValueAsString(request.getParameterMap());
         }
         catch (IOException e){

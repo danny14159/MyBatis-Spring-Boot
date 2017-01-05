@@ -33,4 +33,12 @@ public class TestService {
         System.out.println(baseReceiveMessage.getData().getMessage());
         //throw new BusinessException("123"); //test exception
     }
+
+    @RabbitListener(bindings = @QueueBinding(exchange = @Exchange(value = "host",durable = "true"),
+            value = @Queue(value = "host", durable = "true"), key = "log"))
+    public void testJMSLogMessage(BaseReceiveMessage baseReceiveMessage) {
+
+        System.out.println(baseReceiveMessage.getData().getMessage());
+        //throw new BusinessException("123"); //test exception
+    }
 }

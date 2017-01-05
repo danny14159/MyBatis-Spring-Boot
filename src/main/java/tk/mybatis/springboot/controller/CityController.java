@@ -24,21 +24,37 @@
 
 package tk.mybatis.springboot.controller;
 
+import IceInternal.Ex;
+import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.*;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.RequestContextUtils;
+import org.springframework.web.util.WebUtils;
 import tk.mybatis.springboot.ampq.data.BaseReceiveMessage;
 import tk.mybatis.springboot.ampq.MessageEntity;
 import tk.mybatis.springboot.domain.City;
+import tk.mybatis.springboot.interceptors.SessionInterceptors;
 import tk.mybatis.springboot.service.CityService;
+import tk.mybatis.springboot.util.ServerUtil;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuzh
@@ -46,7 +62,11 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/cities")
-public class CityController {
+public class CityController implements EnvironmentAware,ApplicationContextAware,MessageSourceAware{
+    Environment environment;
+    ApplicationContext applicationContext;
+
+    private MessageSource messageSource;
 
     @Autowired
     private CityService cityService;
@@ -65,5 +85,48 @@ public class CityController {
 
         rabbitTemplate.convertAndSend("host","create",baseReceiveMessage);
         return baseReceiveMessage;
+    }
+
+    @RequestMapping("/async")
+    public Object testAsyncRequest() throws Exception{
+        System.out.println(Thread.currentThread().getId());
+        Thread.sleep(1000);
+
+        return Thread.currentThread().getId();
+    }
+
+    @RequestMapping("/dest")
+    @ResponseBody
+    public Object toRedirect(String flash){
+        Map<String, ?> inputFlashMap = RequestContextUtils.getInputFlashMap(ServerUtil.getHttpServletRequest());
+        return inputFlashMap.get("flash");
+    }
+
+    @RequestMapping("/redirect")
+    public String testFlashAttr(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addAttribute("abc","Hello World!");
+        redirectAttributes.addFlashAttribute("flash","Flash Value!");
+        return "redirect:/cities/dest";
+    }
+
+    @RequestMapping("/some")
+    @ResponseBody
+    public Object someTest(HttpServletRequest request) throws Exception{
+        return WebUtils.getRealPath(request.getServletContext(),"/my");
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
     }
 }

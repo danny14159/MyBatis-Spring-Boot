@@ -1,9 +1,11 @@
 package tk.mybatis.springboot.config;
 
 import org.aopalliance.aop.Advice;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
@@ -76,12 +78,20 @@ public class AmpqConfiguration implements RabbitListenerConfigurer{
     }
 
     @Bean
-    RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory){
+    RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,Jackson2JsonMessageConverter jackson2JsonMessageConverter){
 
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 
         rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
+        rabbitTemplate.setBeforePublishPostProcessors(new MessagePostProcessor(){
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                tk.mybatis.springboot.ampq.data.BaseReceiveMessage o = (tk.mybatis.springboot.ampq.data.BaseReceiveMessage)jackson2JsonMessageConverter.fromMessage(message);
 
+                System.out.println("before:"+o.getData().getMessage());
+                return message;
+            }
+        });
         return rabbitTemplate;
     }
 

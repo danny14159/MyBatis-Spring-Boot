@@ -37,12 +37,16 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.*;
 import org.springframework.core.env.Environment;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResultUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.WebAsyncTask;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
@@ -50,6 +54,7 @@ import org.springframework.web.util.WebUtils;
 import tk.mybatis.springboot.ampq.data.BaseReceiveMessage;
 import tk.mybatis.springboot.ampq.MessageEntity;
 import tk.mybatis.springboot.domain.City;
+import tk.mybatis.springboot.exception.BusinessException;
 import tk.mybatis.springboot.interceptors.SessionInterceptors;
 import tk.mybatis.springboot.service.CityService;
 import tk.mybatis.springboot.util.ServerUtil;
@@ -59,6 +64,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * @author liuzh
@@ -71,6 +77,9 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
     ApplicationContext applicationContext;
 
     private MessageSource messageSource;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Autowired
     private CityService cityService;
@@ -120,10 +129,22 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
     @RequestMapping("/some")
     @ResponseBody
     public Object someTest(@Validated City p, HttpServletRequest request) throws Exception{
-        return new City("城市名","state");
+        throw new BusinessException("123");
+        //return new City("城市名","state");
         //return WebUtils.getRealPath(request.getServletContext(),"/my");
     }
 
+    @RequestMapping(value = "/asyncTask")
+    @ResponseBody
+    public Callable<String> webAsyncTest(){
+
+        return new Callable<String>() {
+            public String call() throws Exception {
+                ResponseEntity body = restTemplate.getForEntity("http://www.baidu.com",String.class);
+                return "异步请求处理完成" + body.getBody().toString();
+            }
+        };
+    }
 
 
     @Override

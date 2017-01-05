@@ -30,7 +30,7 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public Object exception(HttpServletRequest httpServletRequest, HttpServletResponse response, Exception ex) {
-        log.error(ex.getMessage());
+        log.error("Error:",ex);
         String message = ex.getMessage();
         if(ex instanceof BindException){
             message = "";

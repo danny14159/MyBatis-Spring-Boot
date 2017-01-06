@@ -1,6 +1,9 @@
 package tk.mybatis.springboot.config;
 
+import IceInternal.Ex;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -24,9 +27,7 @@ public class MyControllerAdvice implements ResponseBodyAdvice<Object>{
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return (returnType.getGenericParameterType())!=Callable.class
-
-                && converterType != StringHttpMessageConverter.class;
+        return (returnType.getGenericParameterType())!=Callable.class;
     }
 
     @Override
@@ -36,6 +37,15 @@ public class MyControllerAdvice implements ResponseBodyAdvice<Object>{
         Map map = new HashMap();
         map.put("body",body);
         map.put("millis",System.currentTimeMillis() - (long)((ServletServerHttpRequest)request).getServletRequest().getAttribute("startTime"));
+
+        if(StringHttpMessageConverter.class == selectedConverterType){
+            try{
+                return new ObjectMapper().writeValueAsString(map);
+            }
+            catch (Exception e){
+                log.error(e.getMessage());
+            }
+        }
         return map;
     }
 }

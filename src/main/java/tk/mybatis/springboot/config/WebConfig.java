@@ -4,6 +4,8 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
@@ -14,6 +16,7 @@ import tk.mybatis.springboot.interceptors.SessionInterceptors;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 /**
  * Created by Administrator on 2016/9/12.
@@ -24,6 +27,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     @Bean
     public RestTemplate restTemplate(){
         RestTemplate rest =  new RestTemplate();
+        rest.setMessageConverters(Arrays.asList(new StringHttpMessageConverter(Charset.forName("UTF-8"))));
         return rest;
     }
 

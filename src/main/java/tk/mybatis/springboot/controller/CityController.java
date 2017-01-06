@@ -105,6 +105,7 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
     }
 
     @RequestMapping("/async")
+    @ResponseBody
     public Object testAsyncRequest() throws Exception{
         System.out.println(Thread.currentThread().getId());
         Thread.sleep(1000);
@@ -134,14 +135,15 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
         //return WebUtils.getRealPath(request.getServletContext(),"/my");
     }
 
-    @RequestMapping(value = "/asyncTask")
+    @RequestMapping(value = "/asyncTask",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public Callable<String> webAsyncTest(){
 
         return new Callable<String>() {
             public String call() throws Exception {
-                ResponseEntity body = restTemplate.getForEntity("http://www.baidu.com",String.class);
-                return "异步请求处理完成" + body.getBody().toString();
+                ResponseEntity entity = restTemplate.getForEntity("http://www.baidu.com",String.class);
+                String body = (String) entity.getBody();
+                return "异步请求处理完成" + new String(body.getBytes(),"UTF-8");
             }
         };
     }

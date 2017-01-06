@@ -33,7 +33,7 @@ public class ImportController {
     @Autowired
     private RestTemplate restTemplate;
 
-    private int beginPort =49537  ;
+    private int beginPort =50041  ;
 
    /*
     public Object importData() throws Exception{
@@ -141,7 +141,15 @@ public class ImportController {
     public String insertNatPort(){
         importMapper.deleteNatPort();
 
-        _insertNatPort("172.23.222.");
+        _insertNatPort("172.21.0.");
+        _insertNatPort("172.21.1.");
+        _insertNatPort("172.21.3.");
+        _insertNatPort("172.21.4.");
+        _insertNatPort("172.21.5.");
+        _insertNatPort("172.21.6.");
+        _insertNatPort("172.21.7.");
+        _insertNatPort("172.21.8.");
+        _insertNatPort("172.21.9.");
 
         System.out.println(beginPort);
         return "success";
@@ -149,14 +157,14 @@ public class ImportController {
 
     public void _insertNatPort(String inner_ip){
         Map map = new HashMap<>();
-        for(int i = 2;i<=253;i++){
+        for(int i = 1;i<=253;i++){
                 map.put("inner_ip",inner_ip+(i));
                 map.put("port", beginPort);
                 map.put("platform","linux");
                 importMapper.insertNatPort(map);
             beginPort++ ;
         }
-        for(int i = 2;i<=253;i++) {
+        for(int i = 1;i<=253;i++) {
             map.put("inner_ip", inner_ip + (i));
             map.put("port", beginPort);
             map.put("platform", "windows");

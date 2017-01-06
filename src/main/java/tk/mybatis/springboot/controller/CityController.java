@@ -148,6 +148,11 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
         };
     }
 
+    @RequestMapping("/reqAdvice")
+    @ResponseBody
+    public Object testRequestBodyAdvice(@RequestBody City city){
+        return city;
+    }
 
     @Override
     public void setEnvironment(Environment environment) {

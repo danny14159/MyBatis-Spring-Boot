@@ -59,7 +59,9 @@ public class MyRequestBodyAdvice implements RequestBodyAdvice {
                 Class clazz = body.getClass();
                 try {
                     Field userIdFiled = FieldUtils.getField(clazz,"userId",true);
-                    ReflectionUtils.setField(userIdFiled,body,"fake user id for test!");
+                    if(null != userIdFiled){
+                        ReflectionUtils.setField(userIdFiled,body,"fake user id for test!");
+                    }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }

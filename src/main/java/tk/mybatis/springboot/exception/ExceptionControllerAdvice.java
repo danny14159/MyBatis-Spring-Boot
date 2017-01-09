@@ -30,7 +30,7 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public Object exception(HttpServletRequest httpServletRequest, HttpServletResponse response, Exception ex) {
-        log.error("Error:",ex);
+        log.error("Error:",ex.getMessage());
         String message = ex.getMessage();
         if(ex instanceof BindException){
             message = "";
@@ -40,7 +40,6 @@ public class ExceptionControllerAdvice {
                 message += ((FieldError)objectError).getField()+objectError.getDefaultMessage()+";";
             }
         }
-        log.info(ServerUtil.getRequestString(httpServletRequest));
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         return new ReturnMessage(message,response.getStatus(),false);
     }

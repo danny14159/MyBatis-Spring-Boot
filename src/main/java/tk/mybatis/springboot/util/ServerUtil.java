@@ -34,7 +34,14 @@ public class ServerUtil {
             request = getHttpServletRequest();
         }
         try{
-            return "Path:"+request.getRequestURI()+",Parameters:"+objectMapper.writeValueAsString(request.getParameterMap());
+            String headerStr = "";
+            Enumeration<String> headerNames = request.getHeaderNames();
+            while(headerNames.hasMoreElements()){
+                String headerName = headerNames.nextElement();
+                String headerValue = request.getHeader(headerName);
+                headerStr += headerName + ":" + headerValue + ";";
+            }
+            return "Path:"+request.getRequestURI()+",Parameters:"+objectMapper.writeValueAsString(request.getParameterMap()+",Headers:" + headerStr);
         }
         catch (IOException e){
             log.error(e.getMessage());

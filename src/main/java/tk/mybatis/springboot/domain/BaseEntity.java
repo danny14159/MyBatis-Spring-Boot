@@ -44,6 +44,8 @@ public class BaseEntity {
     @Transient
     private Integer rows = 10;
 
+    private String userId;
+
     public Integer getId() {
         return id;
     }
@@ -66,5 +68,13 @@ public class BaseEntity {
 
     public void setRows(Integer rows) {
         this.rows = rows;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

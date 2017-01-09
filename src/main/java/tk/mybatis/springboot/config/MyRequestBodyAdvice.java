@@ -1,9 +1,7 @@
 package tk.mybatis.springboot.config;
 
-import IceInternal.Ex;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
@@ -12,12 +10,16 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.util.StreamUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import tk.mybatis.springboot.UserId;
+import tk.mybatis.springboot.util.FieldUtils;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
@@ -30,30 +32,8 @@ import java.util.concurrent.Callable;
  */
 @ControllerAdvice
 @Slf4j
-public class MyControllerAdvice implements ResponseBodyAdvice<Object>, RequestBodyAdvice {
+public class MyRequestBodyAdvice implements RequestBodyAdvice {
 
-    @Override
-    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return (returnType.getGenericParameterType()) != Callable.class;
-    }
-
-    @Override
-    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
-        log.info("beforeBodyWrite Thread ID:{}", Thread.currentThread().getId());
-
-        Map map = new HashMap();
-        map.put("body", body);
-        map.put("millis", System.currentTimeMillis() - (long) ((ServletServerHttpRequest) request).getServletRequest().getAttribute("startTime"));
-
-        if (StringHttpMessageConverter.class == selectedConverterType) {
-            try {
-                return new ObjectMapper().writeValueAsString(map);
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        }
-        return map;
-    }
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
@@ -73,6 +53,18 @@ public class MyControllerAdvice implements ResponseBodyAdvice<Object>, RequestBo
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         log.info("In Body:{}", body);
+        Annotation[] methodAnnotations = parameter.getParameterAnnotations();
+        for(Annotation annotation:methodAnnotations){
+            if(annotation.annotationType() == UserId.class){
+                Class clazz = body.getClass();
+                try {
+                    Field userIdFiled = FieldUtils.getField(clazz,"userId",true);
+                    ReflectionUtils.setField(userIdFiled,body,"fake user id for test!");
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return body;
     }
 }

@@ -51,6 +51,7 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.util.WebUtils;
+import tk.mybatis.springboot.UserId;
 import tk.mybatis.springboot.ampq.data.BaseReceiveMessage;
 import tk.mybatis.springboot.ampq.MessageEntity;
 import tk.mybatis.springboot.domain.City;
@@ -150,7 +151,7 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
 
     @RequestMapping("/reqAdvice")
     @ResponseBody
-    public Object testRequestBodyAdvice(@RequestBody City city){
+    public Object testRequestBodyAdvice(@RequestBody @UserId City city){
         return city;
     }
 

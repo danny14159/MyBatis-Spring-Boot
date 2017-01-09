@@ -13,10 +13,17 @@
 
 # Default server configuration
 #
+upstream tomcat_server_pool{
+	ip_hash;
+	server 192.168.40.123:8081 weight=4 max_fails=2 fail_timeout=30s;
+	server 192.168.40.123:8082 weight=4 max_fails=2 fail_timeout=30s;
+	server 192.168.40.123:8083 weight=4 max_fails=2 fail_timeout=30s;
+}
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
-	server_name a.com;
+	listen 80;
+	#listen [::]:80 default_server;
+	error_page 404 /x.png;
+	server_name b.com;
 	# SSL configuration
 	#
 	# listen 443 ssl default_server;
@@ -32,14 +39,15 @@ server {
 	# Don't use them in a production server!
 	#
 	# include snippets/snakeoil.conf;
-
 	root /var/www/html;
 
 	# Add index.php to the list if you are using PHP
 	index index.html index.htm index.nginx-debian.html;
 
 	# server_name _;
-
+	location ~ \.flv {
+		flv;
+	}
 	location / {
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
@@ -69,23 +77,35 @@ server {
 # Virtual Host configuration for example.com
 #
 # You can move that to a different file under sites-available/ and symlink that
-# to sites-enabled/ to enable it.
-#
+# to sites-enabled/ to enable it.a
 server {
+
+	#ssl on;
+        ssl_certificate /home/denglei/a.com.crt;
+        ssl_certificate_key /home/denglei/a.com_nopass.key;
 	listen 80;
-
-	server_name b.com;
-
+	listen 443 default ssl;
+	error_page 404 /x.png;
+	server_name a.com;
 	
 	index index.html;
-
+	if ($request_uri ~ .*\.ie) {
+		rewrite ^(.*)$ $1/ie break;
+	}
+	if ($scheme = http) {
+        	return	 301 https://$host$request_uri;
+	}
+	location ~ .*\.sh {
+                return 403;
+        }
 	location / {
 		root /var/www/b.com;
 		try_files $uri $uri/ =404;
 		expires 20s;
 	}
 	location /t {
-		proxy_pass http://192.168.40.123:8081;
+		proxy_next_upstream http_502 http_504 error timeout invalid_header;
+		proxy_pass http://tomcat_server_pool;
 		proxy_set_header Host $host;
 		proxy_set_header X-Forwarded-For $remote_addr;
 	}

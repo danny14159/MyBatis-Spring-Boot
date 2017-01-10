@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestString {
+public class RequestObject {
     private String path;
     private String parameters;
     private String method;

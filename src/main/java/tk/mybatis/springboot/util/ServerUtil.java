@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import tk.mybatis.springboot.domain.RequestString;
+import tk.mybatis.springboot.domain.RequestObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,7 +51,7 @@ public class ServerUtil {
         return "";
     }
 
-    public static RequestString getRequestStringObject(HttpServletRequest request){
+    public static RequestObject getRequestStringObject(HttpServletRequest request){
         if(null == request){
             request = getHttpServletRequest();
         }
@@ -68,7 +68,7 @@ public class ServerUtil {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return new RequestString(request.getRequestURI(),param,request.getMethod(),headerStr);
+        return new RequestObject(request.getRequestURI(),param,request.getMethod(),headerStr);
     }
     public static String getRequestString() {
         return getRequestString(null);

@@ -44,6 +44,7 @@ public class BaseEntity {
     @Transient
     private Integer rows = 10;
 
+    @Transient
     private String userId;
 
     public Integer getId() {

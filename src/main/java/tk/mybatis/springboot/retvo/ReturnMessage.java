@@ -14,7 +14,4 @@ public class ReturnMessage {
 
     protected String message;
 
-    protected Integer code;
-
-    protected Boolean success;
 }

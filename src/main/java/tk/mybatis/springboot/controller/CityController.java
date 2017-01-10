@@ -92,6 +92,7 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
     }
 
     @RequestMapping
+    @ResponseBody
     public PageInfo<City> getAll(City city) {
         List<City> countryList = cityService.getAll(city);
         return new PageInfo<City>(countryList);

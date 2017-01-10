@@ -10,7 +10,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import tk.mybatis.springboot.domain.RequestString;
+import tk.mybatis.springboot.domain.RequestObject;
 import tk.mybatis.springboot.domain.ReturnErrorMessage;
 import tk.mybatis.springboot.retvo.ReturnMessage;
 import tk.mybatis.springboot.util.ServerUtil;
@@ -51,7 +51,7 @@ public class ExceptionControllerAdvice {
             finalExMessage += split[0]+"\r\n\t"+split[1];
         }
 
-        RequestString requestString = ServerUtil.getRequestStringObject(httpServletRequest);
+        RequestObject requestObject = ServerUtil.getRequestStringObject(httpServletRequest);
         String message = "";
         if(ex instanceof BindException){
             BindException bindException = (BindException)ex;
@@ -59,10 +59,11 @@ public class ExceptionControllerAdvice {
             for(ObjectError objectError:allErrors){
                 message += ((FieldError)objectError).getField()+objectError.getDefaultMessage()+";";
             }
-            return new ReturnErrorMessage(requestString,message,response.getStatus(),false);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return new ReturnErrorMessage(requestObject,message);
         }
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return new ReturnErrorMessage( requestString, message + "应用程序错误日志：\r\n"+finalExMessage,response.getStatus(),false);
+        return new ReturnErrorMessage(requestObject, message + "应用程序错误日志：\r\n"+finalExMessage);
     }
 
 }

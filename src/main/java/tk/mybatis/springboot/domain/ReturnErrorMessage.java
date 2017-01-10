@@ -12,11 +12,9 @@ import tk.mybatis.springboot.retvo.ReturnMessage;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReturnErrorMessage extends ReturnMessage {
-    private RequestString requestString;
-    public ReturnErrorMessage(RequestString requestString,String message,Integer code,Boolean success){
+    private RequestObject requestObject;
+    public ReturnErrorMessage(RequestObject requestObject, String message){
         this.message = message;
-        this.code = code;
-        this.success = success;
-        this.requestString = requestString;
+        this.requestObject = requestObject;
     }
 }

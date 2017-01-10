@@ -9,10 +9,16 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import tk.mybatis.springboot.domain.BaseEntity;
+import tk.mybatis.springboot.retvo.ReturnMessage;
+import tk.mybatis.springboot.util.ObjectUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -30,9 +36,20 @@ public class MyResponseBodyAdvice implements ResponseBodyAdvice<Object> {
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         log.info("beforeBodyWrite Thread ID:{}", Thread.currentThread().getId());
-
-        Map map = new HashMap();
-        map.put("body", body);
+        if(null == body){
+            return null;
+        }
+        Map map = null;
+        if(body instanceof ReturnMessage){
+            map = ObjectUtils.obj2Map(body);
+        }
+        else if(body instanceof Map){
+            map = (Map)body;
+        }
+        else{
+            map = new HashMap();
+            map.put("body",body);
+        }
         map.put("millis", System.currentTimeMillis() - (long) ((ServletServerHttpRequest) request).getServletRequest().getAttribute("startTime"));
 
         if (StringHttpMessageConverter.class == selectedConverterType) {

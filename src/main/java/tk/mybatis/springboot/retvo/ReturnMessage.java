@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReturnMessage {
 
-    private String message;
+    protected String message;
 
-    private Integer code;
+    protected Integer code;
 
-    private Boolean success;
+    protected Boolean success;
 }

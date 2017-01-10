@@ -1,9 +1,11 @@
 package tk.mybatis.springboot.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import tk.mybatis.springboot.domain.RequestString;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +49,26 @@ public class ServerUtil {
             log.error(e.getMessage());
         }
         return "";
+    }
+
+    public static RequestString getRequestStringObject(HttpServletRequest request){
+        if(null == request){
+            request = getHttpServletRequest();
+        }
+        String headerStr = "";
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while(headerNames.hasMoreElements()){
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            headerStr += headerName + ":" + headerValue + ";";
+        }
+        String param = null;
+        try {
+            param = objectMapper.writeValueAsString(request.getParameterMap());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return new RequestString(request.getRequestURI(),param,request.getMethod(),headerStr);
     }
     public static String getRequestString() {
         return getRequestString(null);

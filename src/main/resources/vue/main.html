@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		.red{color:red;}
+		.green{color:green;}
+		.blue{color:blue;}
+	</style>
+</head>
+<body>
+
+<div id="app">
+  <p>
+    <!-- 使用 router-link 组件来导航. -->
+    <!-- 通过传入 `to` 属性指定链接. -->
+    <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+    <router-link to="/foo">Go to Foo</router-link>
+    <router-link to="/bar">Go to Bar</router-link>
+  </p>
+  <!-- 路由出口 -->
+  <!-- 路由匹配到的组件将渲染在这里 -->
+  <router-view></router-view>
+</div>
+
+<div id="app-component">
+	<input type="text" v-model="mail" name="" @keydown.up="mail='up'" @keydown.down="mail='down'" @keydown.left="mail='left'" @keydown.right="mail='right'">
+	<input type="text" v-model.number="number" name="">{{number}}
+	<datatable my-ids="ids" :mail="mail" v-for="id in ids" :id="id" @tablechange="procTableChange"></datatable>
+
+</div>
+
+<div id="app-2">
+  <span v-bind:title="message">
+    Hover your mouse over me for a few seconds to see my dynamically bound title!
+  </span>
+  <input v-model="message" type="text" />
+  Your Question:<input v-model="question" type="text" />
+  <div v-bind:data="message">{{message}}</div>
+  <div>{{reversedMessage}}</div>
+  <ul>
+  	<li v-for="(id,i) in ids" :key="id.id">{{i+'-'+id.value}}</li>
+  </ul>
+  <a :href="link" target="_blank" @click="clickLink">baidu</a>
+  <div v-bind:id="'list-' + id">4567</div>
+</div>
+<div id="app-5">
+	  <p>{{ message }}</p>
+	  <button v-on:click="reverseMessage">Reverse Message</button>
+
+	<hr/>
+	<p :class="color" class="red">Test Class</p>
+	<input type="text" v-model="color" @keydown="loginKeydown"/>
+
+	<button @click="login" >login</button><button @click="logout">logout</button>
+	<h1 v-if="loginUser">Login {{loginUser.name}}</h1>
+	<h1 v-else>Not Login</h1>
+</div>
+
+
+
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+<script>
+// 0. 如果使用模块化机制编程，導入Vue和VueRouter，要调用 Vue.use(VueRouter)
+
+// 1. 定义（路由）组件。
+// 可以从其他文件 import 进来
+const Foo = { template: '<div>foo view</div>' }
+const Bar = { template: '<div>bar view</div>' }
+
+// 2. 定义路由
+// 每个路由应该映射一个组件。 其中"component" 可以是
+// 通过 Vue.extend() 创建的组件构造器，
+// 或者，只是一个组件配置对象。
+// 我们晚点再讨论嵌套路由。
+const routes = [
+  { path: '/foo', component: Foo },
+  { path: '/bar', component: Bar }
+]
+
+// 3. 创建 router 实例，然后传 `routes` 配置
+// 你还可以传别的配置参数, 不过先这么简单着吧。
+const router = new VueRouter({
+  routes // （缩写）相当于 routes: routes
+})
+
+// 4. 创建和挂载根实例。
+// 记得要通过 router 配置参数注入路由，
+// 从而让整个应用都有路由功能
+const app = new Vue({
+  router
+}).$mount('#app')
+
+// 现在，应用已经启动了！
+
+
+//注册一个全局组件
+Vue.component('datatable',{
+	props:['myIds','mail','id'],
+	//template:'<p v-for="id in ids" :key="id.id">Hello {{message}},{{id.name}}!</p>',
+	template:'<p @click="tablechange">{{myIds}},{{mail+\',\'+message}},{{id.value}}',
+	data:function(){
+			return {message:'World',ids:[{id:'x',value:6},{id:'y',value:7},{id:'z',value:8}],};
+		},
+	methods:{
+		showProp:function(e){
+			alert(e.target.outerHTML);
+		},
+		tablechange:function(e){
+			console.log('tablechange',arguments);
+			this.$emit('tablechange',this)
+		}
+	}
+	
+});
+var appComponent = new Vue({
+	el:'#app-component',
+	data:{
+		ids:[{id:'x',value:6},{id:'y',value:7},{id:'z',value:8}],
+		mail:'8888@99.com',
+		number:null
+	},
+	methods:{
+		showProp:function(e){
+			alert(e.target.outerHTML)
+		},
+		procTableChange:function(obj){
+			console.log('procTableChange',arguments,obj.id.id,obj.id.value);
+		}
+	},
+	computed:{}
+});
+var app1 = new Vue({
+  el: '#app-2',
+  //方法
+  methods:{
+  	clickLink:function(e){
+  		alert(e.target.innerHTML)
+  		console.log(this);
+  		console.log(arguments);
+  	}
+  },
+  //属性
+  data: {
+    message: 'You loaded this page on ' + new Date(),
+        id:'2dcw',
+        ids:[{id:'x',value:6},{id:'y',value:7},{id:'z',value:8}],
+        link:'http://www.baidu.com',
+        question:''
+  },
+  //计算属性
+  computed:{
+  	reversedMessage:function(){
+  		//console.log(arguments);
+  		return this.message.split('').reverse().join('');
+  	}
+  },
+  //watchers
+  watch:{
+  	question:function(newOne){
+  		this.message = newOne + '?';
+  	}
+  }
+})
+var app2 = new Vue({
+  el: '#app-5',
+  data: {
+    message: 'Hello Vue.js!',
+    color:'red',
+    ok:true,
+    loginUser:null
+  },
+  methods: {
+    reverseMessage: function () {
+      this.message = this.message.split('').reverse().join('')
+    },
+    login:function(){
+    	this.loginUser = {name:this.color}
+    },
+    logout:function(){
+    	this.loginUser = null;
+    },
+    loginKeydown:function(){
+  		console.log(this.message);
+  }
+  },
+
+})
+</script>
+</body>
+</html>
+
+
+

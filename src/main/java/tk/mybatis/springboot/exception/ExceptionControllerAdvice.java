@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import tk.mybatis.springboot.domain.RequestObject;
 import tk.mybatis.springboot.domain.ReturnErrorMessage;
+import tk.mybatis.springboot.domain.TaskTrace;
 import tk.mybatis.springboot.retvo.ReturnMessage;
+import tk.mybatis.springboot.service.TaskTraceService;
 import tk.mybatis.springboot.util.ServerUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +32,8 @@ public class ExceptionControllerAdvice {
 
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private TaskTraceService taskTraceService;
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
@@ -51,6 +55,16 @@ public class ExceptionControllerAdvice {
             finalExMessage += split[0]+"\r\n\t"+split[1];
         }
 
+        //----
+        String taskTraceId = (String) httpServletRequest.getAttribute("__TASK_TRACE_ID");
+        if(null != taskTraceId){
+            TaskTrace taskTrace = new TaskTrace();
+            taskTrace.setId(taskTraceId);
+            taskTrace.setException(finalExMessage);
+            taskTraceService.insertOrUpdate(taskTrace);
+        }
+        //---
+
         RequestObject requestObject = ServerUtil.getRequestStringObject(httpServletRequest);
         String message = "";
         if(ex instanceof BindException){
@@ -65,5 +79,6 @@ public class ExceptionControllerAdvice {
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         return new ReturnErrorMessage(requestObject, message + "应用程序错误日志：\r\n"+finalExMessage);
     }
+
 
 }

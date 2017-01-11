@@ -13,6 +13,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import tk.mybatis.springboot.interceptors.SessionInterceptors;
+import tk.mybatis.springboot.interceptors.TaskTraceInterceptor;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -31,9 +32,15 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         return rest;
     }
 
+    @Bean
+    public TaskTraceInterceptor taskTraceInterceptor(){
+        return new TaskTraceInterceptor();
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new SessionInterceptors()).addPathPatterns("/**");
         registry.addInterceptor(new LocaleChangeInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(taskTraceInterceptor()).addPathPatterns("/**");
     }
 }

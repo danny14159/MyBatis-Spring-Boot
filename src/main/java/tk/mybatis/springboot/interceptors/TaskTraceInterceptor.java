@@ -1,10 +1,11 @@
 package tk.mybatis.springboot.interceptors;
 
-import com.sun.jmx.snmp.tasks.TaskServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
+import tk.mybatis.springboot.config.WrappedResponse;
 import tk.mybatis.springboot.domain.TaskTrace;
 import tk.mybatis.springboot.mapper.TaskTraceMapper;
 import tk.mybatis.springboot.service.TaskTraceService;
@@ -45,9 +46,11 @@ public class TaskTraceInterceptor implements HandlerInterceptor {
         if(0 < taskCount){
             return false;
         }
-
         request.setAttribute("__TASK_TRACE_START_TIME",System.currentTimeMillis());
         request.setAttribute("__TASK_TRACE_ID", UUID.randomUUID().toString());
+
+        response = new WrappedResponse(response);
+
         return true;
     }
 
@@ -58,6 +61,7 @@ public class TaskTraceInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        WrappedResponse wrappedResponse = (WrappedResponse)response;
         log.error("{}",ex);
     }
 }

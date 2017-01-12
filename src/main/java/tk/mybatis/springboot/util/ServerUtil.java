@@ -3,6 +3,7 @@ package tk.mybatis.springboot.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import tk.mybatis.springboot.domain.RequestObject;
@@ -10,6 +11,7 @@ import tk.mybatis.springboot.domain.RequestObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 
 /**
@@ -64,11 +66,14 @@ public class ServerUtil {
         }
         String param = null;
         try {
-            param = objectMapper.writeValueAsString(request.getParameterMap());
-        } catch (JsonProcessingException e) {
+            param = StreamUtils.copyToString(request.getInputStream(), Charset.forName("UTF-8"));;
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return new RequestObject(request.getRequestURI(),param,request.getMethod(),headerStr);
+        return new RequestObject(request.getRequestURL()
+                .append("?")
+                .append(request.getQueryString() == null ? "":request.getQueryString()).toString(),
+                param,request.getMethod(),headerStr);
     }
     public static String getRequestString() {
         return getRequestString(null);

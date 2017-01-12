@@ -41,6 +41,6 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new SessionInterceptors()).addPathPatterns("/**");
         registry.addInterceptor(new LocaleChangeInterceptor()).addPathPatterns("/**");
-        registry.addInterceptor(taskTraceInterceptor()).addPathPatterns("/**");
+        //registry.addInterceptor(taskTraceInterceptor()).addPathPatterns("/**");
     }
 }

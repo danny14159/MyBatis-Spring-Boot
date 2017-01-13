@@ -29,7 +29,7 @@ import java.util.*;
 
 @Configuration
 @Slf4j
-public class ResponseWrapperFilter implements Filter{
+public class TaskTraceFilter implements Filter{
 
     @Autowired
     private TaskTraceService taskTraceService;

@@ -37,6 +37,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.*;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -169,5 +170,12 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
     @Override
     public void setMessageSource(MessageSource messageSource) {
         this.messageSource = messageSource;
+    }
+
+    @ResponseBody
+    @RequestMapping("/server")
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Object testServer(){
+        return new City("城市名","state");
     }
 }

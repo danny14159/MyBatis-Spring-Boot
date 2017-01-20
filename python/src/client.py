@@ -13,5 +13,5 @@ sockobj.connect((serverHost, serverPort)) # connect to server machine + port
 for line in message:
     sockobj.send(line) # send line to server over socket
     data = sockobj.recv(1024) # receive line from server: up to 1k
-    print('Client received:', data) # bytes are quoted, was `x`, repr(x)
+    print('Client received:', data.decode()) # bytes are quoted, was `x`, repr(x)
 sockobj.close() # close socket to send eof to serve

@@ -2,9 +2,9 @@ import pymysql.cursors
 
 # Connect to the database
 def getData():
-    connection = pymysql.connect(host='localhost',
+    connection = pymysql.connect(host='192.168.99.100',
                                  user='root',
-                                 password='804956748',
+                                 password='admin',
                                  db='test',
                                  charset='utf8',
                                  cursorclass=pymysql.cursors.DictCursor)

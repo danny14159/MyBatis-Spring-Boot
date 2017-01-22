@@ -20,8 +20,8 @@ class ScrolledText(Frame):
     def settext(self, text='', file=None):
         if file:
             text = open(file,'r').read()
-        self.text.delete('1.0', END) # delete current text
         self.text.config(state='normal')
+        self.text.delete('1.0', END) # delete current text
         self.text.insert('1.0', text) # add at line 1, col 0
         self.text.mark_set(INSERT, '1.0') # set insert cursor
         self.text.focus() # save user a click

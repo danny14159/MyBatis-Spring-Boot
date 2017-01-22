@@ -1,5 +1,7 @@
 import sys
 import threading
+import json
+import db
 from socket import * # portable socket interface plus constants
 serverHost = 'localhost' # server name, or: 'starship.python.net'
 serverPort = 50007 # non-reserved port used by the server
@@ -12,17 +14,22 @@ def sendSocketMessage(message):
     #print('Client received:', data.decode()) # bytes are quoted, was `x`, repr(x)
 
 #client端要开一个线程接受服务器的消息
-def recv():
+def recvMsg(callable):
     global sockobj
-    sockobj.connect((serverHost, serverPort)) # connect to server machine + port
     try:
         while True:
+            sockobj = socket(AF_INET, SOCK_STREAM) # make a TCP/IP socket object
+            sockobj.connect((serverHost, serverPort)) # connect to server machine + port
             data = sockobj.recv(10240)
-            print('Client received:', data.decode())
+            #print('Client received:', data.decode())
+            if callable and data:
+                record = json.loads(data.decode())
+                db.sendMessage(record['name'],record['message'],record['to'])
+                callable(record)
     finally:
         sockobj.close()
 def beginLoop(callable):
-    sockobj = socket(AF_INET, SOCK_STREAM) # make a TCP/IP socket object
-    t = threading.Thread(target=recv)
+    global sockobj
+    t = threading.Thread(target=recvMsg,args={callable})
     t.setDaemon(True)
     t.start()

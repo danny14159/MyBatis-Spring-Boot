@@ -3,9 +3,9 @@ import pymysql.cursors
 # Connect to the database
 
 global connection
-connection = pymysql.connect(host='localhost',
+connection = pymysql.connect(host='192.168.99.100',
                                  user='root',
-                                 password='804956748',
+                                 password='admin',
                                  db='test',
                                  charset='utf8',
                                  cursorclass=pymysql.cursors.DictCursor)
@@ -53,5 +53,6 @@ def getChatLog(name):
 def sendMessage(name,message,to):
     with connection.cursor() as cursor:
         # Create a new record
-        sql = "INSERT INTO `message` (`name`, `message`,to,time) VALUES (%s, %s,%s,now())"
+        sql = "INSERT INTO `message` (`name`, `message`,`to`,`time`) VALUES (%s, %s,%s,now())"
         cursor.execute(sql, (name,message,to))
+    connection.commit()

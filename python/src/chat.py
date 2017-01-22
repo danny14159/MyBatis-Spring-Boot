@@ -5,8 +5,13 @@ from tkinter.messagebox import *
 import db
 import json
 import client
+import datetime
 
-#showwarning('确认', '')
+def noReceiveMessage(data):
+    showMessageLog()
+
+client.beginLoop(noReceiveMessage)
+
 fields = '用户名', '密码'
 reg_fields = '用户名',' 密码','确认密码'
 def fetch(entries):
@@ -45,8 +50,12 @@ def update_titie(frame):
 def showMessageLog():
     str = ''
     for item in db.getChatLog(current_user):
-        str += item['time']+' '+item['name']+':'+item['message']
+        if item['to'] == current_user or item['to'] == '':
+            str += item['time'].strftime('%m-%d %H:%M:%S')+' '+item['name']+':'+item['message'] +'\n'
     stext.settext(text=str)
+def appendMessageLog(item):
+    if item['to'] == current_user or item['to'] == '':
+        stext.settext(text=stext.gettext() + '\n'+item['time']+' '+item['name']+':'+item['message'])
 def changeCharUser(selected):
     global to_user
     global current_user

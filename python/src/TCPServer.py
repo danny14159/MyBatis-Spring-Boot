@@ -11,14 +11,14 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     """
 
     def handle(self):
-        reqs.append(self)
+        reqs.append(self.request)
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
         #print( "{} wrote:".format(self.client_address[0]))
         #print( self.data)      # just send back the same data, but upper-cased
         for req in reqs:
             try:
-                req.request.sendall(self.data)
+                req.sendall(self.data)
             except Exception:
                 pass
 if __name__ == "__main__":

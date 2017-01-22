@@ -21,7 +21,8 @@ def recv():
             print('Client received:', data.decode())
     finally:
         sockobj.close()
-sockobj = socket(AF_INET, SOCK_STREAM) # make a TCP/IP socket object
-t = threading.Thread(target=recv)
-t.setDaemon(True)
-t.start()
+def beginLoop(callable):
+    sockobj = socket(AF_INET, SOCK_STREAM) # make a TCP/IP socket object
+    t = threading.Thread(target=recv)
+    t.setDaemon(True)
+    t.start()

@@ -12,3 +12,13 @@ target/
 
 # jrebel #
 src/main/resources/rebel.xml
+logging.path_IS_UNDEFINED.err.log
+logging.path_IS_UNDEFINED.info.log
+python/src/__pycache__/
+python/src/myweb/myweb/__pycache__/
+python/src/myweb/polls/__pycache__/
+python/src/myweb/polls/migrations/__pycache__/
+python/src/pymysql/__pycache__/
+python/src/pymysql/constants/__pycache__/
+src/main/java/tk/mybatis/springboot/demo/
+src/main/resources/slice/

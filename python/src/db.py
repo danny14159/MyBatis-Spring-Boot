@@ -3,12 +3,13 @@ import pymysql.cursors
 # Connect to the database
 
 global connection
-connection = pymysql.connect(host='192.168.99.100',
+connection = pymysql.connect(host='localhost',
                                  user='root',
-                                 password='admin',
+                                 password='804956748',
                                  db='test',
                                  charset='utf8',
-                                 cursorclass=pymysql.cursors.DictCursor)
+                                 cursorclass=pymysql.cursors.DictCursor,
+autocommit=True)
 
 def login(name,password):
     with connection.cursor() as cursor:

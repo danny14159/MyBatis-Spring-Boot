@@ -20,7 +20,7 @@ def recvMsg(callable):
         while True:
             sockobj = socket(AF_INET, SOCK_STREAM) # make a TCP/IP socket object
             sockobj.connect((serverHost, serverPort)) # connect to server machine + port
-            data = sockobj.recv(10240)
+            data = sockobj.recv(1024)
             #print('Client received:', data.decode())
             if callable and data:
                 record = json.loads(data.decode())

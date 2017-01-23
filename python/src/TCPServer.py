@@ -1,6 +1,5 @@
 import socketserver
 global reqs
-reqs = []
 class MyTCPHandler(socketserver.BaseRequestHandler):
     """
     The RequestHandler class for our server.
@@ -11,16 +10,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     """
 
     def handle(self):
-        reqs.append(self.request)
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
         #print( "{} wrote:".format(self.client_address[0]))
         #print( self.data)      # just send back the same data, but upper-cased
-        for req in reqs:
-            try:
-                req.sendall(self.data)
-            except Exception:
-                pass
+        self.request.sendall(self.data)
 if __name__ == "__main__":
     HOST, PORT = "localhost", 50007
 

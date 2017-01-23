@@ -4,7 +4,6 @@ class ScrolledText(Frame):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH) # make me expandable
         self.makewidgets()
-        self.settext(text, file)
     def makewidgets(self):
         sbar = Scrollbar(self)
         text = Text(self, relief=SUNKEN)
@@ -17,14 +16,17 @@ class ScrolledText(Frame):
         text.config(width=50)
         text.config(height=20)
         self.text = text
-    def settext(self, text='', file=None):
-        if file:
-            text = open(file,'r').read()
+    def settext(self,text='', file=None,clear=True):
+        origin = self.gettext()
         self.text.config(state='normal')
         self.text.delete('1.0', END) # delete current text
-        self.text.insert('1.0', text) # add at line 1, col 0
+        if clear:
+            self.text.insert('1.0', text) # add at line 1, col 0
+        else:
+            self.text.insert('1.0', origin + text) # add at line 1, col 0
         self.text.mark_set(INSERT, '1.0') # set insert cursor
         self.text.focus() # save user a click
+        self.text.see(END)
         self.text.config(state='disabled')
     def gettext(self): # returns a string
         return self.text.get('1.0', END+'-1c') # first through last

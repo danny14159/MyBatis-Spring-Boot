@@ -4,15 +4,13 @@ import ScrolledText
 from tkinter.messagebox import *
 import db
 import json
-import client
-import datetime
+import ChatClient
+import time
 
 def noReceiveMessage(data):
     showMessageLog()
 
-client.beginLoop(noReceiveMessage)
-
-fields = '用户名', '密码'
+fields = '用户名', '密码','服务地址'
 reg_fields = '用户名',' 密码','确认密码'
 def fetch(entries):
     return list(map(lambda x:x.get(),entries))
@@ -34,7 +32,7 @@ def makeform(root, fields):
 
 def sendMessage():
     msg = msgbox.get()
-    client.sendSocketMessage(json.dumps({'name':current_user,'message':msg,'to':to_user}))
+    ChatClient.sock.send(json.dumps({'name':current_user,'message':msg,'to':to_user}).encode())
     global write
     write.delete(0,END)
 
@@ -47,15 +45,17 @@ def update_titie(frame):
         msg = "，加入当前群聊"
     frame.title("欢迎"+current_user+msg+" -- 双击好友昵称与好友聊天")
 
-def showMessageLog():
+def showMessageLog(msg):
     str = ''
     for item in db.getChatLog(current_user):
-        if item['to'] == current_user or item['to'] == '':
+        print('show',item)
+        if (item['to'] == current_user or item['to'] == '') or item['name'] == current_user:
             str += item['time'].strftime('%m-%d %H:%M:%S')+' '+item['name']+':'+item['message'] +'\n'
     stext.settext(text=str)
 def appendMessageLog(item):
-    if item['to'] == current_user or item['to'] == '':
-        stext.settext(text=stext.gettext() + '\n'+item['time']+' '+item['name']+':'+item['message'])
+    print('append',item)
+    if (item['to'] == current_user or item['to'] == '') or item['name'] == current_user:
+        stext.settext(text=item['time'].strftime('%m-%d %H:%M:%S')+' '+item['name']+':'+item['message'] +'\n',clear=False)
 def changeCharUser(selected):
     global to_user
     global current_user
@@ -66,6 +66,7 @@ def changeCharUser(selected):
     update_titie(chat)
 def showChat():
     up = fetch(ents)
+    ChatClient.clientConnect(up[2],appendMessageLog)
     loginResult = db.login(up[0],up[1])
     if not loginResult[0]:
         showwarning('警告', '用户名或者密码错误')
@@ -94,7 +95,7 @@ def showChat():
     text.pack(side=TOP,fill=X)
     global stext
     stext = ScrolledText.ScrolledText(parent=text,text='')
-    showMessageLog()
+    showMessageLog(msg=None)
     global write
     write = Entry(row)
     msgbox = write

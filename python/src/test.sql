@@ -9,7 +9,7 @@ CREATE TABLE `user` (
 CREATE TABLE `message` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `message` varchar(255) DEFAULT NULL,
-    `from` varchar(255) DEFAULT NULL,
+    `name` varchar(255) DEFAULT NULL,
     `to` varchar(255) DEFAULT NULL,
     `time` datetime DEFAULT NULL,
     PRIMARY KEY (`id`)

@@ -1,5 +1,3 @@
-1.安装pip
-2.安装django
-    pip install django
-3.启动命令
-    python manage.py runserver
+1.在db.py中配置数据库
+2.运行TCPServer.py启动服务端
+3.运行chat.py启动聊天客户端，可以运行多个

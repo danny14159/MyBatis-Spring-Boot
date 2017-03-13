@@ -2,6 +2,8 @@ package tk.mybatis.springboot.config;
 
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import com.rabbitmq.jms.admin.RMQDestination;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,6 +17,7 @@ import javax.jms.Destination;
 public class RabbitJMSConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean(ConnectionFactory.class)
     public ConnectionFactory jmsConnectionFactory() {
         RMQConnectionFactory connectionFactory = new RMQConnectionFactory();
         connectionFactory.setUsername("nsc");

@@ -12,7 +12,7 @@ import javax.sql.DataSource;
  * 数据库配置
  * Created by Jim.Xu on 15/3/19.</h6>
  */
-@Configuration
+//@Configuration
 @EnableConfigurationProperties({DruidDataSourceProperties.class})
 public class DataSourceConfig {
 

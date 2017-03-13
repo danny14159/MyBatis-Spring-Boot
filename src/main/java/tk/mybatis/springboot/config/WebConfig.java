@@ -1,6 +1,7 @@
 package tk.mybatis.springboot.config;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpResponse;
@@ -42,5 +43,12 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         registry.addInterceptor(new SessionInterceptors()).addPathPatterns("/**");
         registry.addInterceptor(new LocaleChangeInterceptor()).addPathPatterns("/**");
         //registry.addInterceptor(taskTraceInterceptor()).addPathPatterns("/**");
+    }
+
+    @Bean
+    public AutowiredAnnotationBeanPostProcessor autowiredAnnotationBeanPostProcessor(){
+        AutowiredAnnotationBeanPostProcessor autowiredAnnotationBeanPostProcessor = new AutowiredAnnotationBeanPostProcessor();
+        autowiredAnnotationBeanPostProcessor.setRequiredParameterValue(false);
+        return autowiredAnnotationBeanPostProcessor;
     }
 }

@@ -19,7 +19,7 @@ import java.util.UUID;
  */
 @Slf4j
 public class TaskTraceInterceptor implements HandlerInterceptor {
-    @Autowired
+    @Autowired(required = false)
     private TaskTraceMapper taskTraceMapper;
     @Autowired
     private TaskTraceService taskTraceService;

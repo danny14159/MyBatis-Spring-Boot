@@ -33,7 +33,7 @@ public class TaskTraceFilter implements Filter{
 
     @Autowired
     private TaskTraceService taskTraceService;
-    @Autowired
+    @Autowired(required = false)
     private TaskTraceMapper taskTraceMapper;
 
     @Override

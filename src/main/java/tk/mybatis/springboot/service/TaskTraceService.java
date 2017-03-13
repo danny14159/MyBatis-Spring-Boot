@@ -11,7 +11,7 @@ import tk.mybatis.springboot.mapper.TaskTraceMapper;
  */
 @Service
 public class TaskTraceService {
-    @Autowired
+    @Autowired(required = false)
     private TaskTraceMapper taskTraceMapper;
 
     /**插入一条任务堆栈记录，如果该任务id找到了成功的记录，则不去记录

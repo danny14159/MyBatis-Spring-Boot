@@ -39,7 +39,7 @@ import java.util.List;
 @Service
 public class UserInfoService {
 
-    @Autowired
+    @Autowired(required = false)
     private UserInfoMapper userInfoMapper;
 
     public List<UserInfo> getAll(UserInfo UserInfo) {

@@ -28,7 +28,7 @@ import java.util.*;
 @Transactional
 @Slf4j
 public class ImportController {
-    @Autowired
+    @Autowired(required = false)
     private ImportMapper importMapper;
     @Autowired
     private RestTemplate restTemplate;

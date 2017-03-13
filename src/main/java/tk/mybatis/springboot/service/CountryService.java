@@ -39,7 +39,7 @@ import java.util.List;
 @Service
 public class CountryService {
 
-    @Autowired
+    @Autowired(required = false)
     private CountryMapper countryMapper;
 
     public List<Country> getAll(Country country) {

@@ -39,7 +39,7 @@ import java.util.List;
 @Service
 public class CityService {
 
-    @Autowired
+    @Autowired(required = false)
     private CityMapper cityMapper;
 
     public List<City> getAll(City city) {

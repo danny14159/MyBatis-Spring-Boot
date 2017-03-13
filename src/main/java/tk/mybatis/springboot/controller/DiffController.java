@@ -27,7 +27,7 @@ import java.util.Set;
 @Controller
 public class DiffController {
 
-    @Autowired
+    @Autowired(required = false)
     private DiffMapper diffMapper;
 
     @RequestMapping("/download")

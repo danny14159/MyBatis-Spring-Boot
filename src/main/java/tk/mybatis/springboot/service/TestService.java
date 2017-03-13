@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 public class TestService {
 
-    @Autowired
+    @Autowired(required = false)
     private TestMapper testMapper;
 
 

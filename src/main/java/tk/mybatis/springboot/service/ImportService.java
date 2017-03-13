@@ -10,7 +10,7 @@ import tk.mybatis.springboot.mapper.ImportMapper;
 @Service
 public class ImportService {
 
-    @Autowired
+    @Autowired(required = false)
     private ImportMapper importMapper;
 
     public void insertHost(){

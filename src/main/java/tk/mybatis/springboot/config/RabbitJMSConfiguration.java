@@ -16,7 +16,7 @@ import javax.jms.Destination;
 @Configuration
 public class RabbitJMSConfiguration {
 
-    @Bean
+    //@Bean
     @ConditionalOnMissingBean(ConnectionFactory.class)
     public ConnectionFactory jmsConnectionFactory() {
         RMQConnectionFactory connectionFactory = new RMQConnectionFactory();

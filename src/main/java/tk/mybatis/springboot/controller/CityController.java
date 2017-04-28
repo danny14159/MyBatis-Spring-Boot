@@ -36,6 +36,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.*;
+import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -56,6 +57,7 @@ import tk.mybatis.springboot.UserId;
 import tk.mybatis.springboot.ampq.data.BaseReceiveMessage;
 import tk.mybatis.springboot.ampq.MessageEntity;
 import tk.mybatis.springboot.domain.City;
+import tk.mybatis.springboot.event.MyEvent;
 import tk.mybatis.springboot.exception.BusinessException;
 import tk.mybatis.springboot.interceptors.SessionInterceptors;
 import tk.mybatis.springboot.service.CityService;
@@ -74,7 +76,8 @@ import java.util.concurrent.Callable;
  */
 @Controller
 @RequestMapping("/cities")
-public class CityController implements EnvironmentAware,ApplicationContextAware,MessageSourceAware{
+public class CityController implements EnvironmentAware,ApplicationContextAware,MessageSourceAware,ApplicationEventPublisherAware
+{
     Environment environment;
     ApplicationContext applicationContext;
 
@@ -177,5 +180,18 @@ public class CityController implements EnvironmentAware,ApplicationContextAware,
     @ResponseStatus(HttpStatus.CONFLICT)
     public Object testServer(){
         return new City("城市名","state");
+    }
+
+    ApplicationEventPublisher applicationEventPublisher;
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+
+    @ResponseBody
+    @RequestMapping("/event")
+    public Object testEvent(){
+        applicationEventPublisher.publishEvent(new MyEvent(this,"我的事件触发了"));
+        return null;
     }
 }

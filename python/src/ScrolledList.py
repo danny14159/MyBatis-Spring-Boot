@@ -25,6 +25,13 @@ class ScrolledList(Frame):
         #list.config(selectmode=SINGLE, setgrid=1) # select,resize modes
         list.bind('<Double-1>', self.handleList) # set event handler
         self.listbox = list
+    def refreshList(self, options):
+        print('list size ',self.listbox.size())
+        self.listbox.delete(0,self.listbox.size())
+        pos = 0
+        if options is not None:
+            for label in options: # add to listbox
+                self.listbox.insert(pos, label) # or insert(END,label)
     def runCommand(self, selection): # redefine me lower
         self.fun(selection)
 if __name__ == '__main__':

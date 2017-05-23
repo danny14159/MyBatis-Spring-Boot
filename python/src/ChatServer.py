@@ -2,6 +2,7 @@ import socket
 import db
 import json
 import threading
+import sys
 
 con = threading.Condition()
 HOST = '' # Symbolic name meaning all available interfaces
@@ -22,16 +23,21 @@ def clientThreadIn(conn):
             data = conn.recv(1024)
             if not data:
                 conn.close()
+                print('No data')
                 return
             print ('Receive',data)
             obj = json.loads(data.decode())
-            db.sendMessage(obj['name'],obj['message'],obj['to'])
+            if('type' not in obj):
+                db.sendMessage(obj['name'],obj['message'],obj['to'])
+            else:
+                print('Login Message')
             NotifyAll()
-        except:
-            print ('Exit',data)
-            return
+        except Exception as err:
+             print("Unexpected error:", err)
+             print ('Exit',data)
+             return
 
-            #came out of loop
+        #came out of loop
 
 def NotifyAll():
     global data

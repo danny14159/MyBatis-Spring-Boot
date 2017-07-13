@@ -20,7 +20,8 @@ def DealIn(s,callback):
             obj = json.loads(inString.decode())
             obj['time'] = datetime.datetime.now()
             callback(obj)
-        except:
+        except Exception as e:
+            print(e)
             break
 
 def clientConnect(ip,callback):

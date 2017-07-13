@@ -5,6 +5,7 @@ from tkinter.messagebox import *
 import db
 import json
 import ChatClient
+import threading
 import time
 
 def noReceiveMessage(data):
@@ -27,8 +28,8 @@ def makeform(root, fields):
         ent.pack(side=RIGHT, expand=YES, fill=X) # grow horizontal
         entries.append(ent)
     return entries
-
-
+def sendLoginNotify():
+    ChatClient.sock.send(json.dumps({'type':'login'}).encode())
 
 def sendMessage():
     msg = msgbox.get()
@@ -48,6 +49,7 @@ def update_titie(frame):
 def showMessageLog(msg):
     str = ''
     for item in db.getChatLog(current_user):
+        friendsList.refreshList(options=list(map(lambda x:x['name'],db.getFriendsList())))
         print('show',item)
         if (item['to'] == current_user or item['to'] == '') or item['name'] == current_user:
             str += item['time'].strftime('%m-%d %H:%M:%S')+' '+item['name']+':'+item['message'] +'\n'
@@ -64,9 +66,17 @@ def changeCharUser(selected):
         return
     to_user = selected
     update_titie(chat)
+def runRefreshFriendsList():
+    while True:
+        print('runRefreshFriendsList')
+        time.sleep(1)
+        friendsList.refreshList(options=list(map(lambda x:x['name'],db.getFriendsList())))
+
 def showChat():
+
     up = fetch(ents)
     ChatClient.clientConnect(up[2],appendMessageLog)
+    #sendLoginNotify()
     loginResult = db.login(up[0],up[1])
     if not loginResult[0]:
         showwarning('警告', '用户名或者密码错误')
@@ -87,8 +97,14 @@ def showChat():
     friends.pack(fill=Y,side=RIGHT)
     flist = db.getFriendsList()
 
-    ScrolledList.ScrolledList(parent=friends,options=list(map(lambda x:x['name'],flist)),fun=changeCharUser).pack(side=BOTTOM)
+    global friendsList
+    friendsList = ScrolledList.ScrolledList(parent=friends,options=list(map(lambda x:x['name'],flist)),fun=changeCharUser)
+    friendsList.pack(side=BOTTOM)
     Label(friends, text='好友列表').pack(side=TOP,fill=X)
+    t1 = threading.Thread(target = runRefreshFriendsList,args={} )
+    t1.setDaemon(True)
+    t1.start()
+    print('好友刷新线程启动')
 
     text.config(bg='black')
     text.config(height=450)
@@ -109,6 +125,9 @@ def showChat():
     send.config(padx=12)
     send.pack(side=RIGHT)
     chat.mainloop()
+
+
+
 def returnToLogin():
     reg.destroy()
     login()
@@ -147,7 +166,7 @@ def login():
     labelfont = ('times', 20, 'bold') # family, size, style
     widget = Label(root, text='Welcome!')
     widget.config(font=labelfont) # use a larger font
-    widget.config(height=5, width=20) # initial size: lines,chars
+    widget.config(height=5, width=40) # initial size: lines,chars
     widget.pack(expand=YES, fill=BOTH)
 
     btn_login = Button(root,text="登录",command=showChat)
@@ -160,5 +179,6 @@ def login():
     btn_reg.config(pady=5)
     btn_reg.pack()
     root.mainloop()
+
 
 login()

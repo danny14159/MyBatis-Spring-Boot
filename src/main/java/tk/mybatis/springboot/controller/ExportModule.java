@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.security.PublicKey;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -48,97 +49,140 @@ public class ExportModule {
         return map;
     }
 
+    static DbHelper user = new DbHelper("jdbc:mysql://58.17.243.161/test?useUnicode=true&characterEncoding=utf8&useSSL=false", "root", "cOpu=*fgK9<x", null);
+    static DbHelper[] d = new DbHelper[]{
+            /***/new DbHelper("jdbc:mysql://localhost:8101/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区"),
+            /***/new DbHelper("jdbc:mysql://localhost:8102/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东二区"),
+            /***/new DbHelper("jdbc:mysql://localhost:8103/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东三区"),
+            /***/new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),
+            /***/new DbHelper("jdbc:mysql://localhost:8106/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "上海一区"),
+            /***/new DbHelper("jdbc:mysql://localhost:8109/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二交易云"),
+            /***/new DbHelper("jdbc:mysql://localhost:8108/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二开发云"),
+            /***/new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南一交易云")
+    };
+
+    public static List<User> getUserIds() throws Exception {
+        Set<User> users = user.executeQuery("select * from user", User.class);
+        Set<UserBean> userBeans = new HashSet<>();
+        for (DbHelper i : d) {
+            userBeans.addAll(i.executeQuery("SELECT DISTINCT\n" +
+                    "\t(user_id) userId\n" +
+                    "FROM\n" +
+                    "\thost where delete_flag = 0\n" +
+                    "union SELECT DISTINCT\n" +
+                    "\t(user_id) userId\n" +
+                    "FROM\n" +
+                    "\tdisk where delete_flag = 0\n" +
+                    "union SELECT DISTINCT\n" +
+                    "\t(user_id) userId\n" +
+                    "FROM\n" +
+                    "\tpublic_ip where delete_flag = 0", UserBean.class));
+        }
+
+        int i = 0;
+        System.out.println("用户总数：" + users.size());
+        System.out.println("有资源用户总数：" + userBeans.size());
+        List<User> ids = new ArrayList<>();
+        for (User user : users) {
+            System.out.println(++i + "/" + users.size());
+            if (userBeans.contains(new UserBean(user.getId()))) {
+                ids.add(user);
+                //System.out.println(item.getUserId());
+            }
+        }
+        System.out.println("结果总数：" + ids.size());
+
+        return ids;
+    }
+
     public static void main(String[] args) throws Exception {
-        DbHelper user = new DbHelper("jdbc:mysql://58.17.243.161/test?useUnicode=true&characterEncoding=utf8&useSSL=false", "root", "cOpu=*fgK9<x",null);
-        Set<User> userIds = user.executeQuery("select * from user limit 1", User.class);
+        List<User> userIds = getUserIds();
 
-        DbHelper[] d = new DbHelper[]{
-                /***/new DbHelper("jdbc:mysql://localhost:8101/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE","华东一区"),
-                /***/new DbHelper("jdbc:mysql://localhost:8102/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE","华东二区"),
-                /***/new DbHelper("jdbc:mysql://localhost:8103/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE","华东三区"),
-                /***/new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE","华东四区"),
-                /***/new DbHelper("jdbc:mysql://localhost:8106/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE","上海一区"),
-                /***/new DbHelper("jdbc:mysql://localhost:8109/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE","西南二交易云"),
-                /***/new DbHelper("jdbc:mysql://localhost:8108/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE","西南二开发云"),
-                /***/new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE","西南一交易云")
-        };
 
-        //int index = 0;
-        //for(User u:userIds) {
-         //   System.out.println(++index+"/"+userIds.size());
-        //    File file = new File("d:/export/"+u.getId()+".xls");
-            List< UserBean> list = new ArrayList<>();
-            for (DbHelper i : d) {
-                boolean isFirst = i.getRegionName().equals("华东一区");
-                if(isFirst) {list.add(new RetPublicIpItem());}
-                list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
-                        "    d.id as id, d.name as name, d.ip as ip, d.band_width as bandWidth, d.charge_mode as chargeMode,\n" +
-                        "    d.ipline as ipline, d.create_time as createTime, d.update_time as updateTime,d.expire_time as expireTime,\n" +
-                        "    d.no as no, d.user_id as user_id, d.`desc` as `desc`, d.openid as openid, d.delete_flag as deleteFlag,\n" +
-                        "    rs.self_status as status,\n" +
-                        "    rs.used as used,\n" +
-                        "      ifnull(ifnull((host.name),(load_balance.name)),(router.name)) as resource,\n" +
-                        "      ifnull(ifnull((host.id),(load_balance.id)),(router.id)) as resourceId\n" +
-                        "    from public_ip d\n" +
-                        "    left join resource_status rs on rs.id=d.id\n" +
-                        "    LEFT JOIN host on host.public_ip_id = d.id\n" +
-                        "    LEFT JOIN load_balance on load_balance.public_ip_id = d.id\n" +
-                        "    LEFT JOIN router on router.public_ip_id = d.id\n" +
-                        "    where  d.delete_flag = 0", RetPublicIp.class));
-                if(isFirst) {list.add(new HostListItem());}
-                list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,\n" +
-                        "        im.cnname as imageName,\n" +
-                        "        fl.cpu as cpu,\n" +
-                        "        fl.memory as memory,\n" +
-                        "        security_type as securityType,keystore_id as keyStoreId,\n" +
-                        "        (SELECT name from keystore where keystore.id=host.keystore_id and delete_flag = 0) as keyStoreName,\n" +
-                        "        sc.name as securityGroupName,pn.name as networkName ,\n" +
-                        "        network_type as networkType,\n" +
-                        "        public_ip_id as publicIpId,\n" +
-                        "        (SELECT ip from public_ip where public_ip.id=host.public_ip_id  and delete_flag = 0) as ip,\n" +
-                        "        `host`.create_time as createTime,\n" +
-                        "        (case host.network_type WHEN 1 then\n" +
-                        "            (SELECT cn.ip FROM classic_network cn WHERE cn.host_id=host.id)\n" +
-                        "         when 2 then\n" +
-                        "             (SELECT hpn.ip FROM host_private_subnetwork hpn WHERE hpn.host_id=host.id)\n" +
-                        "         end) as privateNetworkIp,\n" +
-                        "        rs.self_status as status,\n" +
-                        "        rs.used as used,\n" +
-                        "        host.expire_time as expireTime,\n" +
-                        "        host.begin_time as beginTime,\n" +
-                        "        host.version as version\n" +
-                        "        from host\n" +
-                        "          LEFT JOIN host_private_subnetwork  hpn on hpn.host_id = host.id\n" +
-                        "          LEFT JOIN private_subnetwork pn on hpn.private_subnetwork_id=pn.id\n" +
-                        "          LEFT JOIN host_security_group hsg on host.id=hsg.host_id\n" +
-                        "          LEFT JOIN security_group sc on sc.id = hsg.security_group_id\n" +
-                        "          LEFT JOIN resource_status rs on rs.id=host.id\n" +
-                        "          LEFT JOIN image im on im.id = host.image_id\n" +
-                        "          LEFT JOIN flavor fl on fl.id = host.flavor_id\n" +
-                        "          WHERE host.delete_flag = 0", HostList.class));
-                if(isFirst) {list.add(new DiskListItem());}
-                list.addAll(i.executeQuery("select '"+i.getRegionName()+"'regionName,d.user_id userId,\n" +
-                        "    d.id as id, d.name as name, d.`desc` as `desc`, d.type as type, d.capacity as capacity,\n" +
-                        "    d.tag_name as tagName, d.user_id as user_id, d.create_time as createTime,d.begin_time as beginTime,\n" +
-                        "    d.update_time as updateTime, d.no as `no`, d.expire_time as expireTime,\n" +
-                        "    rs.self_status as status,\n" +
-                        "    rs.used as used,\n" +
-                        "    version,\n" +
-                        "    (select volumn_name from host_disk where disk_id=d.id) as volumnName\n" +
-                        "    from disk d\n" +
-                        "    LEFT JOIN resource_status rs on rs.id = d.id\n" +
-                        "    where d.delete_flag = 0",DiskList.class));
+        int index = 0;
+        System.out.println(++index + "/" + userIds.size());
+        File file = new File("d:/export/未实名认证用户的虚机.xls");
+        List<UserBean> list = new ArrayList<>();
+        for (DbHelper i : d) {
+            if (i.getRegionName().equals("华东一区")) {
+                list.add(new RetPublicIpItem());
             }
-            /*if(list.size() > 3) {
-                exportExcel(u.getId(), new String[]{u.getId(), u.getEmail(), u.getMobile(), u.getRealname()}, list, file);
-            }*/
-            for(UserBean item:list){
-                if(userIds.contains(item.getUserId())){
-                    System.out.println(item.getUserId());
-                }
+            list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
+                    "    d.id as id, d.name as name, d.ip as ip, d.band_width as bandWidth, d.charge_mode as chargeMode,\n" +
+                    "    d.ipline as ipline, d.create_time as createTime, d.update_time as updateTime,d.expire_time as expireTime,\n" +
+                    "    d.no as no, d.user_id as user_id, d.`desc` as `desc`, d.openid as openid, d.delete_flag as deleteFlag,\n" +
+                    "    rs.self_status as status,\n" +
+                    "    rs.used as used,\n" +
+                    "      ifnull(ifnull((host.name),(load_balance.name)),(router.name)) as resource,\n" +
+                    "      ifnull(ifnull((host.id),(load_balance.id)),(router.id)) as resourceId\n" +
+                    "    from public_ip d\n" +
+                    "    left join resource_status rs on rs.id=d.id\n" +
+                    "    LEFT JOIN host on host.public_ip_id = d.id\n" +
+                    "    LEFT JOIN load_balance on load_balance.public_ip_id = d.id\n" +
+                    "    LEFT JOIN router on router.public_ip_id = d.id\n" +
+                    "    where  d.delete_flag = 0", RetPublicIp.class));
+        }
+        for (DbHelper i : d) {
+            if (i.getRegionName().equals("华东一区")) {
+                list.add(new HostListItem());
             }
+            list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,\n" +
+                    "        im.cnname as imageName,\n" +
+                    "        fl.cpu as cpu,\n" +
+                    "        fl.memory as memory,\n" +
+                    "        security_type as securityType,keystore_id as keyStoreId,\n" +
+                    "        (SELECT name from keystore where keystore.id=host.keystore_id and delete_flag = 0) as keyStoreName,\n" +
+                    "        sc.name as securityGroupName,pn.name as networkName ,\n" +
+                    "        network_type as networkType,\n" +
+                    "        public_ip_id as publicIpId,\n" +
+                    "        (SELECT ip from public_ip where public_ip.id=host.public_ip_id  and delete_flag = 0) as ip,\n" +
+                    "        `host`.create_time as createTime,\n" +
+                    "        (case host.network_type WHEN 1 then\n" +
+                    "            (SELECT cn.ip FROM classic_network cn WHERE cn.host_id=host.id)\n" +
+                    "         when 2 then\n" +
+                    "             (SELECT hpn.ip FROM host_private_subnetwork hpn WHERE hpn.host_id=host.id)\n" +
+                    "         end) as privateNetworkIp,\n" +
+                    "        rs.self_status as status,\n" +
+                    "        rs.used as used,\n" +
+                    "        host.expire_time as expireTime,\n" +
+                    "        host.begin_time as beginTime,\n" +
+                    "        host.version as version\n" +
+                    "        from host\n" +
+                    "          LEFT JOIN host_private_subnetwork  hpn on hpn.host_id = host.id\n" +
+                    "          LEFT JOIN private_subnetwork pn on hpn.private_subnetwork_id=pn.id\n" +
+                    "          LEFT JOIN host_security_group hsg on host.id=hsg.host_id\n" +
+                    "          LEFT JOIN security_group sc on sc.id = hsg.security_group_id\n" +
+                    "          LEFT JOIN resource_status rs on rs.id=host.id\n" +
+                    "          LEFT JOIN image im on im.id = host.image_id\n" +
+                    "          LEFT JOIN flavor fl on fl.id = host.flavor_id\n" +
+                    "          WHERE host.delete_flag = 0", HostList.class));
+        }
+        for (DbHelper i : d) {
+            if (i.getRegionName().equals("华东一区")) {
+                list.add(new DiskListItem());
+            }
+            list.addAll(i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,\n" +
+                    "    d.id as id, d.name as name, d.`desc` as `desc`, d.type as type, d.capacity as capacity,\n" +
+                    "    d.tag_name as tagName, d.user_id as user_id, d.create_time as createTime,d.begin_time as beginTime,\n" +
+                    "    d.update_time as updateTime, d.no as `no`, d.expire_time as expireTime,\n" +
+                    "    rs.self_status as status,\n" +
+                    "    rs.used as used,\n" +
+                    "    version,\n" +
+                    "    (select volumn_name from host_disk where disk_id=d.id) as volumnName\n" +
+                    "    from disk d\n" +
+                    "    LEFT JOIN resource_status rs on rs.id = d.id\n" +
+                    "    where d.delete_flag = 0", DiskList.class));
+        }
+        List<UserBean> list2 = new ArrayList<>();
+        for(UserBean i:list){
+            if(userIds.contains(new User(i.getUserId())) || "用户ID".equals(i.getUserId())){
+                list2.add(i);
+            }
+        }
+        System.out.println("资源记录一共："+list2.size());
+        exportExcel("sheet1", new String[]{}, list2, file);
 
-        //}
+
     }
 
     public static void exportExcel(String title, String[] headers, Collection<?> dataSet, File out) {
@@ -197,21 +241,22 @@ public class ExportModule {
         // 遍历集合数据，产生数据行
         //Iterator<?> it = dataSet.iterator();
         int index = 0;
-        for(Object t:dataSet){
+        HSSFFont font3 = workbook.createFont();
+        font3.setColor(HSSFColor.BLACK.index);
+        for (Object t : dataSet) {
             index++;
             row = sheet.createRow(index);
             // 利用反射，根据javabean属性的先后顺序，动态调用getXxx()方法得到属性值
-            Field[] fields = t.getClass().getDeclaredFields();
-            for (short i = 0; i < fields.length; i++) {
-                HSSFCell cell = row.createCell(i);
+            Method[] fields = ReflectionUtils.getAllDeclaredMethods(t.getClass());
+            for (int i = 0,len = fields.length,celli = 0; i < len; i++) {
+                Method getMethod = fields[i];
+                String fieldName = getMethod.getName();
+                //String getMethodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+                if("getClass".equals(fieldName) || !fieldName.startsWith("get")){continue;}
+                HSSFCell cell = row.createCell(celli++);
                 cell.setCellStyle(style2);
-                Field field = fields[i];
-                String fieldName = field.getName();
-                String getMethodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
                 try {
-                    Class<?> tCls = t.getClass();
-                    Method getMethod = tCls.getMethod(getMethodName, new Class[]{});
-                    Object value = getMethod.invoke(t, new Object[]{});
+                    Object value = getMethod.invoke(t);
                     if (null == value)
                         value = "";
 
@@ -223,7 +268,7 @@ public class ExportModule {
                         if (!bValue) {
                             textValue = "女";
                         }
-                    } else if (value instanceof Date) {
+                    } else if (value instanceof Date || value instanceof Timestamp) {
                         Date date = (Date) value;
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         textValue = sdf.format(date);
@@ -251,21 +296,11 @@ public class ExportModule {
                             cell.setCellValue(Double.parseDouble(textValue));
                         } else {
                             HSSFRichTextString richString = new HSSFRichTextString(textValue);
-                            HSSFFont font3 = workbook.createFont();
-                            font3.setColor(HSSFColor.BLACK.index);
                             richString.applyFont(font3);
                             cell.setCellValue(richString);
                         }
                     }
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
+                } catch (Exception e){
                     e.printStackTrace();
                 } finally {
                     // 清理资源
@@ -279,54 +314,41 @@ public class ExportModule {
         }
     }
 
-    @Data
-
-    public static class UserBean{
-        protected String userId;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class User {
-        private String id;
-        private String mobile;
-        private String email;
-        private String realname;
-    }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class RetPublicIp extends UserBean{
+    public static class RetPublicIp extends UserBean {
         private String regionName;
         private String id;
         private String name;
         private String ip;
         private Long bandWidth;
-        private Byte chargeMode;
-        private Byte ipline;
-        private Date createTime;
+        private Integer chargeMode;
+        private Integer ipline;
+        private Timestamp createTime;
         private Date expireTime;
         private Integer used;
     }
+
     @Data
-    public static class RetPublicIpItem extends UserBean{
-        private String regionName="区名";
-        private String id="ID";
-        private String name="IP名称";
-        private String ip="IP";
-        private String bandWidth="带宽";
-        private String chargeMode="计费模式";
-        private String ipline="线路";
-        private String createTime="创建时间";
-        private String expireTime="到期时间";
-        private String used="使用状态";
+    public static class RetPublicIpItem extends UserBean implements Item {
+        private String regionName = "区名";
+        private String id = "ID";
+        private String name = "IP名称";
+        private String ip = "IP";
+        private String bandWidth = "带宽";
+        private String chargeMode = "计费模式";
+        private String ipline = "线路";
+        private String createTime = "创建时间";
+        private String expireTime = "到期时间";
+        private String used = "使用状态";
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class HostList  extends UserBean{
+    public static class HostList extends UserBean {
         private String regionName;
         private String id;
         private String name;
@@ -335,54 +357,65 @@ public class ExportModule {
         private String imageName;
         private Integer networkType;
         private String ip;
-        private Date expireTime;
+        private Timestamp expireTime;
         private String privateNetworkIp;
-        private Date beginTime;
+        private Timestamp beginTime;
+        private Integer status;
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class HostListItem extends UserBean{
-        private String regionName="区名";
-        private String id="ID";
-        private String name="主机名";
-        private String cpu="CPU";
-        private String memory="内存";
-        private String imageName="镜像名称";
-        private String networkType="网络类型";
-        private String ip="IP";
-        private String expireTime="到期时间";
-        private String privateNetworkIp="私网IP";
-        private String beginTime="创建时间";
+    public static class HostListItem extends UserBean implements Item {
+        private String regionName = "区名";
+        private String id = "ID";
+        private String name = "主机名";
+        private String cpu = "CPU";
+        private String memory = "内存";
+        private String imageName = "镜像名称";
+        private String networkType = "网络类型";
+        private String ip = "IP";
+        private String expireTime = "到期时间";
+        private String privateNetworkIp = "私网IP";
+        private String beginTime = "创建时间";
+        private String status = "虚机状态：1可用2关机3创建中4删除中500过期";
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class DiskList extends UserBean{
+    public static class DiskList extends UserBean {
         private String regionName;
         private String id;
         private Integer status;
         private String name;
-        private Byte type;
+        private Integer type;
         private Long capacity;
         private String volumnName;
         private Integer used;
-        private Date expireTime;
-        private Date beginTime;
+        private Timestamp expireTime;
+        private Timestamp beginTime;
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class DiskListItem extends UserBean{
-        private String regionName="区名";
-        private String id="ID";
-        private String status="状态";
-        private String name="名称";
-        private String type="类型";
-        private String capacity="容量";
-        private String volumnName="盘符";
-        private String used="使用状态";
-        private String expireTime="到期时间";
-        private String beginTime="创建时间";
+    public static class DiskListItem extends UserBean implements Item {
+        private String regionName = "区名";
+        private String id = "ID";
+        private String status = "状态";
+        private String name = "名称";
+        private String type = "类型";
+        private String capacity = "容量";
+        private String volumnName = "盘符";
+        private String used = "使用状态";
+        private String expireTime = "到期时间";
+        private String beginTime = "创建时间";
     }
+
+    interface Item {
+    }
+
+
 }
+

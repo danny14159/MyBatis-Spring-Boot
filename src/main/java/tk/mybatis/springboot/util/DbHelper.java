@@ -76,8 +76,14 @@ public class DbHelper {
                     if(StringUtils.isEmpty(temp) || "Class".equals(temp)) continue;
                     String fieldName = temp.substring(0,1).toLowerCase() + temp.substring(1);
 
-                    System.out.println(fieldName+":"+resultSet.getObject(fieldName).getClass().getName());
-                    method.invoke(obj,resultSet.getObject(fieldName));
+  //                  System.out.println(fieldName);
+  //                  System.out.println(resultSet.getObject(fieldName));
+ //                   System.out.println(resultSet.getObject(fieldName).getClass().getName());
+                    Object value = resultSet.getObject(fieldName);
+                    if(null != value) {
+                        //System.out.println(fieldName+value.getClass().getName());
+                        method.invoke(obj, value);
+                    }
                 }
             }
             result.add(obj);

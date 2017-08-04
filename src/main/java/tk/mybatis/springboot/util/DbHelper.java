@@ -1,5 +1,6 @@
 package tk.mybatis.springboot.util;
 
+import IceInternal.Ex;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ReflectionUtils;
@@ -45,50 +46,76 @@ public class DbHelper {
         }
     }
 
-    public Connection getConnection() throws SQLException {
+    public Connection getConnection() {
         Connection con = null;
-        con = DriverManager.getConnection(url, username, password);
+        try {
+            con = DriverManager.getConnection(url, username, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         return con;
     }
 
     public void closeConnection(Connection con) {
         try {
-            con.close();
+            if(!con.isClosed()) {
+                con.close();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public <T> Set<T> executeQuery(String sql, Class<T> clz) throws Exception{
+    public void executeUpdate(String sql){
         Connection connection = getConnection();
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
 
-        PreparedStatement statement = connection.prepareStatement(sql);
-        ResultSet resultSet = statement.executeQuery();
+            statement.executeUpdate();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            closeConnection(connection);
+        }
+    }
 
+    public <T> Set<T> executeQuery(String sql, Class<T> targetClass){
+        Connection connection = getConnection();
         Set<T> result = new HashSet<>();
-        while(resultSet.next()){
-            T obj = clz.newInstance();
-            Method[] allDeclaredMethods = ReflectionUtils.getAllDeclaredMethods(clz);
-            for(Method method:allDeclaredMethods){
-                if(method.getName().startsWith("set")){
-                    String temp = method.getName().substring(3);
-                    if(StringUtils.isEmpty(temp) || "Class".equals(temp)) continue;
-                    String fieldName = temp.substring(0,1).toLowerCase() + temp.substring(1);
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
 
-  //                  System.out.println(fieldName);
-  //                  System.out.println(resultSet.getObject(fieldName));
- //                   System.out.println(resultSet.getObject(fieldName).getClass().getName());
-                    Object value = resultSet.getObject(fieldName);
-                    if(null != value) {
-                        //System.out.println(fieldName+value.getClass().getName());
-                        method.invoke(obj, value);
+            while (resultSet.next()) {
+                T obj = targetClass.newInstance();
+                Method[] allDeclaredMethods = ReflectionUtils.getAllDeclaredMethods(targetClass);
+                for (Method method : allDeclaredMethods) {
+                    if (method.getName().startsWith("set")) {
+                        String temp = method.getName().substring(3);
+                        if (StringUtils.isEmpty(temp) || "Class".equals(temp)) continue;
+                        String fieldName = temp.substring(0, 1).toLowerCase() + temp.substring(1);
+
+                        //                  System.out.println(fieldName);
+                        //                  System.out.println(resultSet.getObject(fieldName));
+                        //                   System.out.println(resultSet.getObject(fieldName).getClass().getName());
+                        Object value = resultSet.getObject(fieldName);
+                        if (null != value) {
+                            //System.out.println(fieldName+value.getClass().getName());
+                            method.invoke(obj, value);
+                        }
                     }
                 }
+                result.add(obj);
             }
-            result.add(obj);
         }
-        closeConnection(connection);
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            closeConnection(connection);
+        }
         return result;
     }
 

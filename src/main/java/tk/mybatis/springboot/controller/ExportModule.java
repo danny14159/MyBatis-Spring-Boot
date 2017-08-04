@@ -120,7 +120,7 @@ public class ExportModule {
                     "    LEFT JOIN host on host.public_ip_id = d.id\n" +
                     "    LEFT JOIN load_balance on load_balance.public_ip_id = d.id\n" +
                     "    LEFT JOIN router on router.public_ip_id = d.id\n" +
-                    "    where  d.delete_flag = 0", RetPublicIp.class));
+                    "    where  d.delete_flag = 0 and d.expire_time > now() or d.expire_time is null", RetPublicIp.class));
         }
         for (DbHelper i : d) {
             if (i.getRegionName().equals("华东一区")) {
@@ -146,7 +146,7 @@ public class ExportModule {
                     "        rs.used as used,\n" +
                     "        host.expire_time as expireTime,\n" +
                     "        host.begin_time as beginTime,\n" +
-                    "        host.version as version\n" +
+                    "        host.version as version,rs.openid\n" +
                     "        from host\n" +
                     "          LEFT JOIN host_private_subnetwork  hpn on hpn.host_id = host.id\n" +
                     "          LEFT JOIN private_subnetwork pn on hpn.private_subnetwork_id=pn.id\n" +
@@ -155,7 +155,7 @@ public class ExportModule {
                     "          LEFT JOIN resource_status rs on rs.id=host.id\n" +
                     "          LEFT JOIN image im on im.id = host.image_id\n" +
                     "          LEFT JOIN flavor fl on fl.id = host.flavor_id\n" +
-                    "          WHERE host.delete_flag = 0", HostList.class));
+                    "          WHERE host.delete_flag = 0 and host.expire_time > now() or host.expire_time is null", HostList.class));
         }
         for (DbHelper i : d) {
             if (i.getRegionName().equals("华东一区")) {
@@ -171,7 +171,7 @@ public class ExportModule {
                     "    (select volumn_name from host_disk where disk_id=d.id) as volumnName\n" +
                     "    from disk d\n" +
                     "    LEFT JOIN resource_status rs on rs.id = d.id\n" +
-                    "    where d.delete_flag = 0", DiskList.class));
+                    "    where d.delete_flag = 0 and d.expire_time > now() or d.expire_time is null", DiskList.class));
         }
         List<UserBean> list2 = new ArrayList<>();
         for(UserBean i:list){
@@ -351,6 +351,7 @@ public class ExportModule {
     public static class HostList extends UserBean {
         private String regionName;
         private String id;
+        private String openid;
         private String name;
         private Integer cpu;
         private BigDecimal memory;
@@ -369,6 +370,7 @@ public class ExportModule {
     public static class HostListItem extends UserBean implements Item {
         private String regionName = "区名";
         private String id = "ID";
+        private String openid = "ID";
         private String name = "主机名";
         private String cpu = "CPU";
         private String memory = "内存";

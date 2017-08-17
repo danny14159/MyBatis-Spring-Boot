@@ -130,7 +130,7 @@ public class ExportModule {
                     "    LEFT JOIN host on host.public_ip_id = d.id\n" +
                     "    LEFT JOIN load_balance on load_balance.public_ip_id = d.id\n" +
                     "    LEFT JOIN router on router.public_ip_id = d.id\n" +
-                    "    where  d.delete_flag = 0 and d.expire_time > now() or d.expire_time is null", RetPublicIp.class));
+                    "    where  d.delete_flag = 0", RetPublicIp.class));
             n++;
         }
         n = 0;
@@ -167,7 +167,7 @@ public class ExportModule {
                     "          LEFT JOIN resource_status rs on rs.id=host.id\n" +
                     "          LEFT JOIN image im on im.id = host.image_id\n" +
                     "          LEFT JOIN flavor fl on fl.id = host.flavor_id\n" +
-                    "          WHERE host.delete_flag = 0 and host.expire_time > now() or host.expire_time is null", HostList.class));
+                    "          WHERE host.delete_flag = 0", HostList.class));
             n++;
         }
         n = 0;
@@ -185,7 +185,7 @@ public class ExportModule {
                     "    (select volumn_name from host_disk where disk_id=d.id) as volumnName\n" +
                     "    from disk d\n" +
                     "    LEFT JOIN resource_status rs on rs.id = d.id\n" +
-                    "    where d.delete_flag = 0 and d.expire_time > now() or d.expire_time is null", DiskList.class));
+                    "    where d.delete_flag = 0", DiskList.class));
             n++;
         }
         List<UserBean> list2 = new ArrayList<>();

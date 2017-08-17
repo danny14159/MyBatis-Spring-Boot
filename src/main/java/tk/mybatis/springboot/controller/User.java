@@ -13,6 +13,7 @@ public class User {
     private String mobile;
     private String email;
     private String realname;
+    private String loginname;
 
     @Override
     public boolean equals(Object obj) {

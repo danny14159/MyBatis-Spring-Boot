@@ -100,10 +100,15 @@ public class DbHelper {
                         //                  System.out.println(fieldName);
                         //                  System.out.println(resultSet.getObject(fieldName));
                         //                   System.out.println(resultSet.getObject(fieldName).getClass().getName());
-                        Object value = resultSet.getObject(fieldName);
-                        if (null != value) {
-                            //System.out.println(fieldName+value.getClass().getName());
-                            method.invoke(obj, value);
+                        try {
+                            Object value = resultSet.getObject(fieldName);
+                            if (null != value) {
+                                //System.out.println(fieldName+value.getClass().getName());
+                                method.invoke(obj, value);
+                            }
+                        }
+                        catch (Exception e){
+                            //Ignore
                         }
                     }
                 }

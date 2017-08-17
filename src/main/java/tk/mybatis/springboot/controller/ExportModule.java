@@ -49,20 +49,20 @@ public class ExportModule {
         return map;
     }
 
-    static DbHelper user = new DbHelper("jdbc:mysql://58.17.243.161/test?useUnicode=true&characterEncoding=utf8&useSSL=false", "root", "cOpu=*fgK9<x", null);
+    static DbHelper user = new DbHelper("jdbc:mysql://183.66.65.231/test?useUnicode=true&characterEncoding=utf8&useSSL=false", "root", "cOpu=*fgK9<x", null);
     static DbHelper[] d = new DbHelper[]{
-            /***/new DbHelper("jdbc:mysql://localhost:8101/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区"),
-            /***/new DbHelper("jdbc:mysql://localhost:8102/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东二区"),
-            /***/new DbHelper("jdbc:mysql://localhost:8103/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东三区"),
-            /***/new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),
-            /***/new DbHelper("jdbc:mysql://localhost:8106/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "上海一区"),
-            /***/new DbHelper("jdbc:mysql://localhost:8109/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二交易云"),
-            /***/new DbHelper("jdbc:mysql://localhost:8108/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二开发云"),
-            /***/new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南一交易云")
+            /*new DbHelper("jdbc:mysql://localhost:8101/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区"),
+            new DbHelper("jdbc:mysql://localhost:8102/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东二区"),
+            new DbHelper("jdbc:mysql://localhost:8103/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东三区"),
+            new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),*/
+            new DbHelper("jdbc:mysql://localhost:8106/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "上海一区")/*,
+            new DbHelper("jdbc:mysql://localhost:8109/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二交易云"),
+            new DbHelper("jdbc:mysql://localhost:8108/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二开发云"),
+            new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南一交易云")*/
     };
 
     public static List<User> getUserIds() throws Exception {
-        Set<User> users = user.executeQuery("select * from user", User.class);
+        Set<User> users = getUserMap();
         Set<UserBean> userBeans = new HashSet<>();
         for (DbHelper i : d) {
             userBeans.addAll(i.executeQuery("SELECT DISTINCT\n" +
@@ -95,16 +95,26 @@ public class ExportModule {
         return ids;
     }
 
+    static Set<User> userSet = null;
+
+    static public Set<User> getUserMap(){
+        if(null == userSet) {
+            userSet = user.executeQuery("select * from user", User.class);
+        }
+        return userSet;
+    }
+
     public static void main(String[] args) throws Exception {
         List<User> userIds = getUserIds();
 
 
         int index = 0;
         System.out.println(++index + "/" + userIds.size());
-        File file = new File("d:/export/未实名认证用户的虚机.xls");
+        File file = new File("d:/export/虚机.xls");
         List<UserBean> list = new ArrayList<>();
+        int n = 0;
         for (DbHelper i : d) {
-            if (i.getRegionName().equals("华东一区")) {
+            if (n == 0) {
                 list.add(new RetPublicIpItem());
             }
             list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
@@ -121,9 +131,11 @@ public class ExportModule {
                     "    LEFT JOIN load_balance on load_balance.public_ip_id = d.id\n" +
                     "    LEFT JOIN router on router.public_ip_id = d.id\n" +
                     "    where  d.delete_flag = 0 and d.expire_time > now() or d.expire_time is null", RetPublicIp.class));
+            n++;
         }
+        n = 0;
         for (DbHelper i : d) {
-            if (i.getRegionName().equals("华东一区")) {
+            if (n == 0) {
                 list.add(new HostListItem());
             }
             list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,\n" +
@@ -156,9 +168,11 @@ public class ExportModule {
                     "          LEFT JOIN image im on im.id = host.image_id\n" +
                     "          LEFT JOIN flavor fl on fl.id = host.flavor_id\n" +
                     "          WHERE host.delete_flag = 0 and host.expire_time > now() or host.expire_time is null", HostList.class));
+            n++;
         }
+        n = 0;
         for (DbHelper i : d) {
-            if (i.getRegionName().equals("华东一区")) {
+            if (n == 0) {
                 list.add(new DiskListItem());
             }
             list.addAll(i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,\n" +
@@ -172,10 +186,20 @@ public class ExportModule {
                     "    from disk d\n" +
                     "    LEFT JOIN resource_status rs on rs.id = d.id\n" +
                     "    where d.delete_flag = 0 and d.expire_time > now() or d.expire_time is null", DiskList.class));
+            n++;
         }
         List<UserBean> list2 = new ArrayList<>();
+        Map<String,User> userMap = new HashMap<>();
+        getUserMap().forEach((i)-> userMap.put(i.getId(),i));
+
         for(UserBean i:list){
             if(userIds.contains(new User(i.getUserId())) || "用户ID".equals(i.getUserId())){
+                User user = userMap.get(i.getUserId());
+                if(null != user) {
+                    i.setRealname(user.getRealname());
+                    i.setEmail(user.getEmail());
+                    i.setMobile(user.getMobile());
+                }
                 list2.add(i);
             }
         }

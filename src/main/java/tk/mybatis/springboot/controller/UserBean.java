@@ -17,6 +17,9 @@ import java.util.Set;
 public class
 UserBean {
     protected String userId = "用户ID";
+    protected String realname = "姓名";
+    protected String email = "email";
+    protected String mobile = "mobile";
 
     @Override
     public boolean equals(Object obj) {
@@ -28,14 +31,7 @@ UserBean {
         return userId.hashCode();
     }
 
-    public static void main(String[] args) {
-        System.out.println("a".hashCode());
-        System.out.println("aa".hashCode());
-        System.out.println("9798244615d741368bc43a5694d99e72".hashCode());
-
-        Set<UserBean> beans = new HashSet<>();
-        beans.add(new UserBean("111"));
-
-        System.out.println(beans.contains(new UserBean("111")));
+    UserBean(String userId){
+        this.userId = userId;
     }
 }

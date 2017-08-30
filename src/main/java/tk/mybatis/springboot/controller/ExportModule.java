@@ -1,5 +1,6 @@
 package tk.mybatis.springboot.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,8 @@ import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import tk.mybatis.springboot.util.DbHelper;
 
 import java.io.File;
@@ -50,16 +53,44 @@ public class ExportModule {
     }
 
     static DbHelper user = new DbHelper("jdbc:mysql://183.66.65.231/test?useUnicode=true&characterEncoding=utf8&useSSL=false", "root", "cOpu=*fgK9<x", null);
+
+    public static void main0(String[] args) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Set<User> userSet = user.executeQuery("select * from user where length(id)<32", User.class);
+
+        for(User user:userSet){
+                String id = (String) restTemplate.getForObject("http://sso.newtouch.com/api/user-by-id/"+user.getId(),Map.class).get("id");
+                ExportModule.user.executeUpdate("update user set id='"+id+"' where id='"+user.getLoginname()+"'");
+        }
+
+    }
+
     static DbHelper[] d = new DbHelper[]{
-            /*new DbHelper("jdbc:mysql://localhost:8101/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区"),
+            new DbHelper("jdbc:mysql://localhost:8101/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区"),
             new DbHelper("jdbc:mysql://localhost:8102/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东二区"),
             new DbHelper("jdbc:mysql://localhost:8103/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东三区"),
-            new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),*/
-            new DbHelper("jdbc:mysql://localhost:8106/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "上海一区")/*,
+            new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),
+            new DbHelper("jdbc:mysql://localhost:8106/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "上海一区"),
             new DbHelper("jdbc:mysql://localhost:8109/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二交易云"),
             new DbHelper("jdbc:mysql://localhost:8108/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二开发云"),
-            new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南一交易云")*/
+            new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南一交易云")
     };
+
+    public static void main(String[] args) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        DbHelper dbHelper = new DbHelper("jdbc:mysql://localhost:8101/operation?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区");
+        Set<InternalPay> internalPays = dbHelper.executeQuery("select * from internal_pay", InternalPay.class);
+        internalPays.forEach(i->{
+            try {
+                i.setAmount(objectMapper.readValue(i.getOrder_detail(),Map.class).get("orderMoney"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        File file = new File("d:/export/内部支付记录.xls");
+        exportExcel("sheet1", new String[]{}, internalPays, file);
+    }
 
     public static List<User> getUserIds() throws Exception {
         Set<User> users = getUserMap();
@@ -99,12 +130,12 @@ public class ExportModule {
 
     static public Set<User> getUserMap(){
         if(null == userSet) {
-            userSet = user.executeQuery("select * from user", User.class);
+            userSet = user.executeQuery("select id,realname,email,mobile from user", User.class);
         }
         return userSet;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main1(String[] args) throws Exception {
         List<User> userIds = getUserIds();
 
 

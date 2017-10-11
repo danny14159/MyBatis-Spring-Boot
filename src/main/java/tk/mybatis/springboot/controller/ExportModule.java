@@ -1,9 +1,7 @@
 package tk.mybatis.springboot.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -59,9 +57,9 @@ public class ExportModule {
         RestTemplate restTemplate = new RestTemplate();
         Set<User> userSet = user.executeQuery("select * from user where length(id)<32", User.class);
 
-        for(User user:userSet){
-                String id = (String) restTemplate.getForObject("http://sso.newtouch.com/api/user-by-id/"+user.getId(),Map.class).get("id");
-                ExportModule.user.executeUpdate("update user set id='"+id+"' where id='"+user.getLoginname()+"'");
+        for (User user : userSet) {
+            String id = (String) restTemplate.getForObject("http://sso.newtouch.com/api/user-by-id/" + user.getId(), Map.class).get("id");
+            ExportModule.user.executeUpdate("update user set id='" + id + "' where id='" + user.getLoginname() + "'");
         }
 
     }
@@ -77,13 +75,13 @@ public class ExportModule {
             new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南一交易云")
     };
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         ObjectMapper objectMapper = new ObjectMapper();
         DbHelper dbHelper = new DbHelper("jdbc:mysql://localhost:8101/operation?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区");
         Set<InternalPay> internalPays = dbHelper.executeQuery("select * from internal_pay", InternalPay.class);
-        internalPays.forEach(i->{
+        internalPays.forEach(i -> {
             try {
-                i.setAmount(objectMapper.readValue(i.getOrder_detail(),Map.class).get("orderMoney"));
+                i.setAmount(objectMapper.readValue(i.getOrder_detail(), Map.class).get("orderMoney"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -128,27 +126,58 @@ public class ExportModule {
 
     static Set<User> userSet = null;
 
-    static public Set<User> getUserMap(){
-        if(null == userSet) {
+    static public Set<User> getUserMap() {
+        if (null == userSet) {
             userSet = user.executeQuery("select id,realname,email,mobile from user", User.class);
         }
         return userSet;
     }
 
-    public static void main1(String[] args) throws Exception {
-        List<User> userIds = getUserIds();
+    static RestTemplate restTemplate = new RestTemplate();
+    static ObjectMapper objectMapper = new ObjectMapper();
+
+    static public Map<String, User> getUserFromSSO(Collection<String> userIds) {
+        Map<String, User> ssoUserCache = new HashMap();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://sso.newtouch.com/api/users");
+        for (String userId : userIds) {
+            builder.queryParam("userId", userId);
+        }
+        String body = restTemplate.getForObject(builder.toUriString(), String.class);
+        try {
+            List<LoginUser> loginUsers = objectMapper.readValue(body, objectMapper.getTypeFactory().constructParametrizedType(List.class, List.class, LoginUser.class));
+            for(LoginUser loginUser:loginUsers){
+                ssoUserCache.put(loginUser.getId(),new User(loginUser.getId(),loginUser.getDefaultMobile(),loginUser.getDefaultEmail(),
+                        loginUser.getRealName(),loginUser.getLoginName()));
+            }
+            return ssoUserCache;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public static void main(String[] args) throws Exception {
+        boolean selectAllUsers = true;  //是否查询所有用户的
 
 
-        int index = 0;
-        System.out.println(++index + "/" + userIds.size());
+        Collection<User> userIds = null;
+        if (!selectAllUsers) {
+            userIds = getUserIds();
+            System.out.println("总用户数:" + userIds.size());
+        }
+
         File file = new File("d:/export/虚机.xls");
         List<UserBean> list = new ArrayList<>();
+        List<UserBean> iplist = new ArrayList<>();
+        List<UserBean> disklist = new ArrayList<>();
+        List<UserBean> hostlist = new ArrayList<>();
         int n = 0;
         for (DbHelper i : d) {
             if (n == 0) {
                 list.add(new RetPublicIpItem());
+                iplist.add(new RetPublicIpItem());
             }
-            list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
+            Set<RetPublicIp> retPublicIps = i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
                     "    d.id as id, d.name as name, d.ip as ip, d.band_width as bandWidth, d.charge_mode as chargeMode,\n" +
                     "    d.ipline as ipline, d.create_time as createTime, d.update_time as updateTime,d.expire_time as expireTime,\n" +
                     "    d.no as no, d.user_id as user_id, d.`desc` as `desc`, d.openid as openid, d.delete_flag as deleteFlag,\n" +
@@ -161,15 +190,18 @@ public class ExportModule {
                     "    LEFT JOIN host on host.public_ip_id = d.id\n" +
                     "    LEFT JOIN load_balance on load_balance.public_ip_id = d.id\n" +
                     "    LEFT JOIN router on router.public_ip_id = d.id\n" +
-                    "    where  d.delete_flag = 0", RetPublicIp.class));
+                    "    where  d.delete_flag = 0", RetPublicIp.class);
+            list.addAll(retPublicIps);
+            iplist.addAll(retPublicIps);
             n++;
         }
         n = 0;
         for (DbHelper i : d) {
             if (n == 0) {
                 list.add(new HostListItem());
+                hostlist.add(new HostListItem());
             }
-            list.addAll(i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,\n" +
+            Set<HostList> hostLists = i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,\n" +
                     "        im.cnname as imageName,\n" +
                     "        fl.cpu as cpu,\n" +
                     "        fl.memory as memory,\n" +
@@ -198,51 +230,74 @@ public class ExportModule {
                     "          LEFT JOIN resource_status rs on rs.id=host.id\n" +
                     "          LEFT JOIN image im on im.id = host.image_id\n" +
                     "          LEFT JOIN flavor fl on fl.id = host.flavor_id\n" +
-                    "          WHERE host.delete_flag = 0", HostList.class));
+                    "          WHERE host.delete_flag = 0", HostList.class);
+            list.addAll(hostLists);
+            hostlist.addAll(hostLists);
             n++;
         }
         n = 0;
         for (DbHelper i : d) {
             if (n == 0) {
                 list.add(new DiskListItem());
+                disklist.add(new DiskListItem());
             }
-            list.addAll(i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,\n" +
+            Set<DiskList> diskLists = i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,\n" +
                     "    d.id as id, d.name as name, d.`desc` as `desc`, d.type as type, d.capacity as capacity,\n" +
                     "    d.tag_name as tagName, d.user_id as user_id, d.create_time as createTime,d.begin_time as beginTime,\n" +
                     "    d.update_time as updateTime, d.no as `no`, d.expire_time as expireTime,\n" +
                     "    rs.self_status as status,\n" +
-                    "    rs.used as used,\n" +
+                    "    rs.used as used,rs.openid,\n" +
                     "    version,\n" +
                     "    (select volumn_name from host_disk where disk_id=d.id) as volumnName\n" +
                     "    from disk d\n" +
                     "    LEFT JOIN resource_status rs on rs.id = d.id\n" +
-                    "    where d.delete_flag = 0", DiskList.class));
+                    "    where d.delete_flag = 0", DiskList.class);
+            list.addAll(diskLists);
+            disklist.addAll(diskLists);
             n++;
         }
-        List<UserBean> list2 = new ArrayList<>();
-        Map<String,User> userMap = new HashMap<>();
-        getUserMap().forEach((i)-> userMap.put(i.getId(),i));
+        List<UserBean> entryList = new ArrayList<>();
+        Map<String, User> userMap = new HashMap<>();
+        if (!selectAllUsers) {
+            Map<String, User> finalUserMap = userMap;
+            getUserMap().forEach((i) -> finalUserMap.put(i.getId(), i));
+        }
+        else {
+            Set<String> distinctUserIds = new HashSet<>();
+            list.forEach((i) ->distinctUserIds.add(i.getUserId()));
+            System.out.println("用户总数："+distinctUserIds.size());
+            userMap = getUserFromSSO(distinctUserIds);
+        }
 
-        for(UserBean i:list){
-            if(userIds.contains(new User(i.getUserId())) || "用户ID".equals(i.getUserId())){
+        for (UserBean i : list) {
+            if(selectAllUsers || (!selectAllUsers && (userIds.contains(new User(i.getUserId())) || "用户ID".equals(i.getUserId())))) {
                 User user = userMap.get(i.getUserId());
-                if(null != user) {
+                if (null != user) {
                     i.setRealname(user.getRealname());
                     i.setEmail(user.getEmail());
                     i.setMobile(user.getMobile());
                 }
-                list2.add(i);
+                entryList.add(i);
             }
         }
-        System.out.println("资源记录一共："+list2.size());
-        exportExcel("sheet1", new String[]{}, list2, file);
+        System.out.println("资源记录一共：" + entryList.size());
+        exportExcel("sheet1", new String[]{}, entryList, file);
 
 
-    }
-
-    public static void exportExcel(String title, String[] headers, Collection<?> dataSet, File out) {
         // 声明一个工作薄
         HSSFWorkbook workbook = new HSSFWorkbook();
+
+        createSheet(workbook,"IP原始数据",null,iplist);
+        createSheet(workbook,"虚机原始数据",null,hostlist);
+        createSheet(workbook,"硬盘原始数据",null,disklist);
+        try {
+            workbook.write(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createSheet(HSSFWorkbook workbook,String title, String[] headers, Collection<?> dataSet) {
         // 生成一个表格
         HSSFSheet sheet = workbook.createSheet(title);
         // 设置表格默认列宽度为15个字节
@@ -285,13 +340,13 @@ public class ExportModule {
         // 定义注释的大小和位置,详见文档
 
         // 产生表格标题行
-        HSSFRow row = sheet.createRow(0);
+/*        HSSFRow row = sheet.createRow(0);
         for (short i = 0; i < headers.length; i++) {
             HSSFCell cell = row.createCell(i);
             cell.setCellStyle(style);
             HSSFRichTextString text = new HSSFRichTextString(headers[i]);
             cell.setCellValue(text);
-        }
+        }*/
 
         // 遍历集合数据，产生数据行
         //Iterator<?> it = dataSet.iterator();
@@ -299,15 +354,16 @@ public class ExportModule {
         HSSFFont font3 = workbook.createFont();
         font3.setColor(HSSFColor.BLACK.index);
         for (Object t : dataSet) {
-            index++;
-            row = sheet.createRow(index);
+            HSSFRow row = sheet.createRow(index);
             // 利用反射，根据javabean属性的先后顺序，动态调用getXxx()方法得到属性值
             Method[] fields = ReflectionUtils.getAllDeclaredMethods(t.getClass());
-            for (int i = 0,len = fields.length,celli = 0; i < len; i++) {
+            for (int i = 0, len = fields.length, celli = 0; i < len; i++) {
                 Method getMethod = fields[i];
                 String fieldName = getMethod.getName();
                 //String getMethodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-                if("getClass".equals(fieldName) || !fieldName.startsWith("get")){continue;}
+                if ("getClass".equals(fieldName) || !fieldName.startsWith("get")) {
+                    continue;
+                }
                 HSSFCell cell = row.createCell(celli++);
                 cell.setCellStyle(style2);
                 try {
@@ -355,20 +411,20 @@ public class ExportModule {
                             cell.setCellValue(richString);
                         }
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
                     // 清理资源
                 }
             }
-        }
-        try {
-            workbook.write(out);
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            index++;
         }
     }
 
+    public static void exportExcel(String title, String[] headers, Collection<?> dataSet, File out) {
+
+    }
 
     @Data
     @AllArgsConstructor
@@ -425,7 +481,7 @@ public class ExportModule {
     public static class HostListItem extends UserBean implements Item {
         private String regionName = "区名";
         private String id = "ID";
-        private String openid = "ID";
+        private String openid = "虚机的后台ID";
         private String name = "主机名";
         private String cpu = "CPU";
         private String memory = "内存";
@@ -444,6 +500,7 @@ public class ExportModule {
     public static class DiskList extends UserBean {
         private String regionName;
         private String id;
+        private String openid;
         private Integer status;
         private String name;
         private Integer type;
@@ -460,6 +517,7 @@ public class ExportModule {
     public static class DiskListItem extends UserBean implements Item {
         private String regionName = "区名";
         private String id = "ID";
+        private String openid = "硬盘的后台ID";
         private String status = "状态";
         private String name = "名称";
         private String type = "类型";

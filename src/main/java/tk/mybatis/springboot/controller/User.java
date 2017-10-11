@@ -1,6 +1,8 @@
 package tk.mybatis.springboot.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
@@ -8,6 +10,7 @@ import java.util.Objects;
  * Created by Administrator on 2017/7/14.
  */
 @Data
+@AllArgsConstructor
 public class User {
     private String id;
     private String mobile;

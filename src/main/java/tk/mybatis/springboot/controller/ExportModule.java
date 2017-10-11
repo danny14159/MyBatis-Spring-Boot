@@ -137,23 +137,32 @@ public class ExportModule {
     static ObjectMapper objectMapper = new ObjectMapper();
 
     static public Map<String, User> getUserFromSSO(Collection<String> userIds) {
+        //Get请求，避免url过长，45个用户一个请求
         Map<String, User> ssoUserCache = new HashMap();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://sso.newtouch.com/api/users");
+
+        int index = 0;
         for (String userId : userIds) {
             builder.queryParam("userId", userId);
-        }
-        String body = restTemplate.getForObject(builder.toUriString(), String.class);
-        try {
-            List<LoginUser> loginUsers = objectMapper.readValue(body, objectMapper.getTypeFactory().constructParametrizedType(List.class, List.class, LoginUser.class));
-            for(LoginUser loginUser:loginUsers){
-                ssoUserCache.put(loginUser.getId(),new User(loginUser.getId(),loginUser.getDefaultMobile(),loginUser.getDefaultEmail(),
-                        loginUser.getRealName(),loginUser.getLoginName()));
+            index ++ ;
+            if(index % 45 == 0 || index == userIds.size()){
+                String body = restTemplate.getForObject(builder.toUriString(), String.class);
+                try {
+                    List<LoginUser> loginUsers = objectMapper.readValue(body, objectMapper.getTypeFactory().constructParametrizedType(List.class, List.class, LoginUser.class));
+                    System.out.println(loginUsers.size());
+                    for(LoginUser loginUser:loginUsers){
+                        ssoUserCache.put(loginUser.getId(),new User(loginUser.getId(),loginUser.getDefaultMobile(),loginUser.getDefaultEmail(),
+                                loginUser.getRealName(),loginUser.getLoginName()));
+                    }
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+                builder = UriComponentsBuilder.fromHttpUrl("https://sso.newtouch.com/api/users");
             }
-            return ssoUserCache;
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
+
         }
-        return null;
+
+        return ssoUserCache;
     }
 
     public static void main(String[] args) throws Exception {

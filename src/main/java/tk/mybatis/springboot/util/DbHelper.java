@@ -24,7 +24,7 @@ public class DbHelper {
      *
      * @author Danny
      */
-    public DbHelper(String url, String username, String password,String regionName) {
+    public DbHelper(String url, String username, String password, String regionName) {
         this.url = url;
         this.username = username;
         this.password = password;
@@ -59,7 +59,7 @@ public class DbHelper {
 
     public void closeConnection(Connection con) {
         try {
-            if(!con.isClosed()) {
+            if (!con.isClosed()) {
                 con.close();
             }
         } catch (SQLException e) {
@@ -67,21 +67,20 @@ public class DbHelper {
         }
     }
 
-    public void executeUpdate(String sql){
+    public void executeUpdate(String sql) {
         Connection connection = getConnection();
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
 
             statement.executeUpdate();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             closeConnection(connection);
         }
     }
 
-    public <T> Set<T> executeQuery(String sql, Class<T> targetClass){
+    public <T> Set<T> executeQuery(String sql, Class<T> targetClass) {
         Connection connection = getConnection();
         Set<T> result = new HashSet<>();
         try {
@@ -101,24 +100,21 @@ public class DbHelper {
                         //                  System.out.println(resultSet.getObject(fieldName));
                         //                   System.out.println(resultSet.getObject(fieldName).getClass().getName());
                         try {
-                            Object value = resultSet.getObject(fieldName);
+                            Object value = resultSet.getObject(fieldName, method.getParameterTypes()[0]);
                             if (null != value) {
                                 //System.out.println(fieldName+value.getClass().getName());
                                 method.invoke(obj, value);
                             }
-                        }
-                        catch (Exception e){
+                        } catch (Exception e) {
                             //Ignore
                         }
                     }
                 }
                 result.add(obj);
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             closeConnection(connection);
         }
         return result;

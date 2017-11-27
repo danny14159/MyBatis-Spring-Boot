@@ -144,15 +144,15 @@ public class ExportModule {
         int index = 0;
         for (String userId : userIds) {
             builder.queryParam("userId", userId);
-            index ++ ;
-            if(index % 45 == 0 || index == userIds.size()){
+            index++;
+            if (index % 45 == 0 || index == userIds.size()) {
                 String body = restTemplate.getForObject(builder.toUriString(), String.class);
                 try {
                     List<LoginUser> loginUsers = objectMapper.readValue(body, objectMapper.getTypeFactory().constructParametrizedType(List.class, List.class, LoginUser.class));
                     System.out.println(loginUsers.size());
-                    for(LoginUser loginUser:loginUsers){
-                        ssoUserCache.put(loginUser.getId(),new User(loginUser.getId(),loginUser.getDefaultMobile(),loginUser.getDefaultEmail(),
-                                loginUser.getRealName(),loginUser.getLoginName()));
+                    for (LoginUser loginUser : loginUsers) {
+                        ssoUserCache.put(loginUser.getId(), new User(loginUser.getId(), loginUser.getDefaultMobile(), loginUser.getDefaultEmail(),
+                                loginUser.getRealName(), loginUser.getLoginName()));
                     }
                 } catch (IOException e) {
                     log.error(e.getMessage(), e);
@@ -175,7 +175,8 @@ public class ExportModule {
             System.out.println("总用户数:" + userIds.size());
         }
 
-        File file = new File("d:/export/虚机.xls");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+        File file = new File("资源导出" + simpleDateFormat.format(new Date()) + ".xls");
         List<UserBean> list = new ArrayList<>();
         List<UserBean> iplist = new ArrayList<>();
         List<UserBean> disklist = new ArrayList<>();
@@ -199,7 +200,7 @@ public class ExportModule {
                     "    LEFT JOIN host on host.public_ip_id = d.id\n" +
                     "    LEFT JOIN load_balance on load_balance.public_ip_id = d.id\n" +
                     "    LEFT JOIN router on router.public_ip_id = d.id\n" +
-                    "    where  d.delete_flag = 0", RetPublicIp.class);
+                    "   ", RetPublicIp.class);
             list.addAll(retPublicIps);
             iplist.addAll(retPublicIps);
             n++;
@@ -210,7 +211,7 @@ public class ExportModule {
                 list.add(new HostListItem());
                 hostlist.add(new HostListItem());
             }
-            Set<HostList> hostLists = i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,\n" +
+            Set<HostList> hostLists = i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,host.delete_flag as deleteFlag,\n" +
                     "        im.cnname as imageName,\n" +
                     "        fl.cpu as cpu,\n" +
                     "        fl.memory as memory,\n" +
@@ -239,7 +240,7 @@ public class ExportModule {
                     "          LEFT JOIN resource_status rs on rs.id=host.id\n" +
                     "          LEFT JOIN image im on im.id = host.image_id\n" +
                     "          LEFT JOIN flavor fl on fl.id = host.flavor_id\n" +
-                    "          WHERE host.delete_flag = 0", HostList.class);
+                    "          ", HostList.class);
             list.addAll(hostLists);
             hostlist.addAll(hostLists);
             n++;
@@ -250,7 +251,7 @@ public class ExportModule {
                 list.add(new DiskListItem());
                 disklist.add(new DiskListItem());
             }
-            Set<DiskList> diskLists = i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,\n" +
+            Set<DiskList> diskLists = i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,d.delete_flag as deleteFlag,\n" +
                     "    d.id as id, d.name as name, d.`desc` as `desc`, d.type as type, d.capacity as capacity,\n" +
                     "    d.tag_name as tagName, d.user_id as user_id, d.create_time as createTime,d.begin_time as beginTime,\n" +
                     "    d.update_time as updateTime, d.no as `no`, d.expire_time as expireTime,\n" +
@@ -260,7 +261,7 @@ public class ExportModule {
                     "    (select volumn_name from host_disk where disk_id=d.id) as volumnName\n" +
                     "    from disk d\n" +
                     "    LEFT JOIN resource_status rs on rs.id = d.id\n" +
-                    "    where d.delete_flag = 0", DiskList.class);
+                    "   ", DiskList.class);
             list.addAll(diskLists);
             disklist.addAll(diskLists);
             n++;
@@ -270,16 +271,15 @@ public class ExportModule {
         if (!selectAllUsers) {
             Map<String, User> finalUserMap = userMap;
             getUserMap().forEach((i) -> finalUserMap.put(i.getId(), i));
-        }
-        else {
+        } else {
             Set<String> distinctUserIds = new HashSet<>();
-            list.forEach((i) ->distinctUserIds.add(i.getUserId()));
-            System.out.println("用户总数："+distinctUserIds.size());
+            list.forEach((i) -> distinctUserIds.add(i.getUserId()));
+            System.out.println("用户总数：" + distinctUserIds.size());
             userMap = getUserFromSSO(distinctUserIds);
         }
 
         for (UserBean i : list) {
-            if(selectAllUsers || (!selectAllUsers && (userIds.contains(new User(i.getUserId())) || "用户ID".equals(i.getUserId())))) {
+            if (selectAllUsers || (!selectAllUsers && (userIds.contains(new User(i.getUserId())) || "用户ID".equals(i.getUserId())))) {
                 User user = userMap.get(i.getUserId());
                 if (null != user) {
                     i.setRealname(user.getRealname());
@@ -296,9 +296,9 @@ public class ExportModule {
         // 声明一个工作薄
         HSSFWorkbook workbook = new HSSFWorkbook();
 
-        createSheet(workbook,"IP原始数据",null,iplist);
-        createSheet(workbook,"虚机原始数据",null,hostlist);
-        createSheet(workbook,"硬盘原始数据",null,disklist);
+        createSheet(workbook, "IP原始数据", null, iplist);
+        createSheet(workbook, "虚机原始数据", null, hostlist);
+        createSheet(workbook, "硬盘原始数据", null, disklist);
         try {
             workbook.write(file);
         } catch (IOException e) {
@@ -306,7 +306,7 @@ public class ExportModule {
         }
     }
 
-    public static void createSheet(HSSFWorkbook workbook,String title, String[] headers, Collection<?> dataSet) {
+    public static void createSheet(HSSFWorkbook workbook, String title, String[] headers, Collection<?> dataSet) {
         // 生成一个表格
         HSSFSheet sheet = workbook.createSheet(title);
         // 设置表格默认列宽度为15个字节

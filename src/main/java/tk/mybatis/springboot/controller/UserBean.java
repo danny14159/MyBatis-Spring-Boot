@@ -16,6 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class
 UserBean {
+    protected String deleteFlag = "是否删除，1删除，0未删除";
     protected String userId = "用户ID";
     protected String realname = "姓名";
     protected String email = "email";

@@ -447,7 +447,7 @@ public class ExportModule {
         private Integer chargeMode;
         private Integer ipline;
         private Timestamp createTime;
-        private Date expireTime;
+        private Timestamp expireTime;
         private Integer used;
     }
 

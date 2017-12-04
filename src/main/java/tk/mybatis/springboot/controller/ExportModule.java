@@ -1,10 +1,11 @@
 package tk.mybatis.springboot.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -13,16 +14,14 @@ import tk.mybatis.springboot.util.DbHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.security.PublicKey;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static tk.mybatis.springboot.controller.ExcelUtil.createSheet;
 
 /**
  * Created by Administrator on 2017/7/13.
@@ -87,7 +86,6 @@ public class ExportModule {
             }
         });
         File file = new File("d:/export/内部支付记录.xls");
-        exportExcel("sheet1", new String[]{}, internalPays, file);
     }
 
     public static List<User> getUserIds() throws Exception {
@@ -184,8 +182,8 @@ public class ExportModule {
         int n = 0;
         for (DbHelper i : d) {
             if (n == 0) {
-                list.add(new RetPublicIpItem());
-                iplist.add(new RetPublicIpItem());
+                list.add(new RetPublicIp());
+                iplist.add(new RetPublicIp());
             }
             Set<RetPublicIp> retPublicIps = i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
                     "    d.id as id, d.name as name, d.ip as ip, d.band_width as bandWidth, d.charge_mode as chargeMode,\n" +
@@ -208,8 +206,8 @@ public class ExportModule {
         n = 0;
         for (DbHelper i : d) {
             if (n == 0) {
-                list.add(new HostListItem());
-                hostlist.add(new HostListItem());
+                list.add(new HostList());
+                hostlist.add(new HostList());
             }
             Set<HostList> hostLists = i.executeQuery("SELECT '" + i.getRegionName() + "'regionName ,host.user_id userId, host.id,`host`.name,`host`.`desc`,type,image_id as imageId,host.delete_flag as deleteFlag,\n" +
                     "        im.cnname as imageName,\n" +
@@ -248,8 +246,8 @@ public class ExportModule {
         n = 0;
         for (DbHelper i : d) {
             if (n == 0) {
-                list.add(new DiskListItem());
-                disklist.add(new DiskListItem());
+                list.add(new DiskList());
+                disklist.add(new DiskList());
             }
             Set<DiskList> diskLists = i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,d.delete_flag as deleteFlag,\n" +
                     "    d.id as id, d.name as name, d.`desc` as `desc`, d.type as type, d.capacity as capacity,\n" +
@@ -290,8 +288,6 @@ public class ExportModule {
             }
         }
         System.out.println("资源记录一共：" + entryList.size());
-        exportExcel("sheet1", new String[]{}, entryList, file);
-
 
         // 声明一个工作薄
         HSSFWorkbook workbook = new HSSFWorkbook();
@@ -306,240 +302,122 @@ public class ExportModule {
         }
     }
 
-    public static void createSheet(HSSFWorkbook workbook, String title, String[] headers, Collection<?> dataSet) {
-        // 生成一个表格
-        HSSFSheet sheet = workbook.createSheet(title);
-        // 设置表格默认列宽度为15个字节
-        sheet.setDefaultColumnWidth((short) 15);
-        // 生成一个样式
-        HSSFCellStyle style = workbook.createCellStyle();
-        // 设置这些样式
-        style.setFillForegroundColor(HSSFColor.WHITE.index);
-        style.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        style.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-        style.setBorderLeft(HSSFCellStyle.BORDER_THIN);
-        style.setBorderRight(HSSFCellStyle.BORDER_THIN);
-        style.setBorderTop(HSSFCellStyle.BORDER_THIN);
-        style.setAlignment(HSSFCellStyle.ALIGN_CENTER);
-        // 生成一个字体
-        HSSFFont font = workbook.createFont();
-        font.setColor(HSSFColor.BLACK.index);
-        font.setFontHeightInPoints((short) 12);
-        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        // 把字体应用到当前的样式
-        style.setFont(font);
-        // 生成并设置另一个样式
-        HSSFCellStyle style2 = workbook.createCellStyle();
-        style2.setFillForegroundColor(HSSFColor.WHITE.index);
-        style2.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        style2.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-        style2.setBorderLeft(HSSFCellStyle.BORDER_THIN);
-        style2.setBorderRight(HSSFCellStyle.BORDER_THIN);
-        style2.setBorderTop(HSSFCellStyle.BORDER_THIN);
-        style2.setAlignment(HSSFCellStyle.ALIGN_CENTER);
-        style2.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
-        // 生成另一个字体
-        HSSFFont font2 = workbook.createFont();
-        font2.setBoldweight(HSSFFont.BOLDWEIGHT_NORMAL);
-        // 把字体应用到当前的样式
-        // style2.setFont(font2);
-
-        // 声明一个画图的顶级管理器
-        HSSFPatriarch patriarch = sheet.createDrawingPatriarch();
-        // 定义注释的大小和位置,详见文档
-
-        // 产生表格标题行
-/*        HSSFRow row = sheet.createRow(0);
-        for (short i = 0; i < headers.length; i++) {
-            HSSFCell cell = row.createCell(i);
-            cell.setCellStyle(style);
-            HSSFRichTextString text = new HSSFRichTextString(headers[i]);
-            cell.setCellValue(text);
-        }*/
-
-        // 遍历集合数据，产生数据行
-        //Iterator<?> it = dataSet.iterator();
-        int index = 0;
-        HSSFFont font3 = workbook.createFont();
-        font3.setColor(HSSFColor.BLACK.index);
-        for (Object t : dataSet) {
-            HSSFRow row = sheet.createRow(index);
-            // 利用反射，根据javabean属性的先后顺序，动态调用getXxx()方法得到属性值
-            Method[] fields = ReflectionUtils.getAllDeclaredMethods(t.getClass());
-            for (int i = 0, len = fields.length, celli = 0; i < len; i++) {
-                Method getMethod = fields[i];
-                String fieldName = getMethod.getName();
-                //String getMethodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-                if ("getClass".equals(fieldName) || !fieldName.startsWith("get")) {
-                    continue;
-                }
-                HSSFCell cell = row.createCell(celli++);
-                cell.setCellStyle(style2);
-                try {
-                    Object value = getMethod.invoke(t);
-                    if (null == value)
-                        value = "";
-
-                    // 判断值的类型后进行强制类型转换
-                    String textValue = null;
-                    if (value instanceof Boolean) {
-                        boolean bValue = (Boolean) value;
-                        textValue = "男";
-                        if (!bValue) {
-                            textValue = "女";
-                        }
-                    } else if (value instanceof Date || value instanceof Timestamp) {
-                        Date date = (Date) value;
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        textValue = sdf.format(date);
-                    } else if (value instanceof byte[]) {
-                        // 有图片时，设置行高为60px;
-                        row.setHeightInPoints(60);
-                        // 设置图片所在列宽度为80px,注意这里单位的一个换算
-                        sheet.setColumnWidth(i, (short) (35.7 * 80));
-                        // sheet.autoSizeColumn(i);
-                        byte[] bsValue = (byte[]) value;
-                        HSSFClientAnchor anchor = new HSSFClientAnchor(0, 0, 1023, 255, (short) 6, index, (short) 6,
-                                index);
-                        anchor.setAnchorType(2);
-                        patriarch.createPicture(anchor, workbook.addPicture(bsValue, HSSFWorkbook.PICTURE_TYPE_JPEG));
-                    } else {
-                        // 其它数据类型都当作字符串简单处理
-                        textValue = value.toString();
-                    }
-                    // 如果不是图片数据，就利用正则表达式判断textValue是否全部由数字组成
-                    if (textValue != null) {
-                        Pattern p = Pattern.compile("^//d+(//.//d+)?$");
-                        Matcher matcher = p.matcher(textValue);
-                        if (matcher.matches()) {
-                            // 是数字当作double处理
-                            cell.setCellValue(Double.parseDouble(textValue));
-                        } else {
-                            HSSFRichTextString richString = new HSSFRichTextString(textValue);
-                            richString.applyFont(font3);
-                            cell.setCellValue(richString);
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    // 清理资源
-                }
-            }
-
-            index++;
-        }
-    }
-
-    public static void exportExcel(String title, String[] headers, Collection<?> dataSet, File out) {
-
-    }
-
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class RetPublicIp extends UserBean {
-        private String regionName;
-        private String id;
+        @ExcelUtil.ExcelField(order = 1,value = "IP名称")
         private String name;
+        @ExcelUtil.ExcelField(order = 2,value = "ID")
+        private String id;
+        @ExcelUtil.ExcelField(order = 10,value = "IP")
         private String ip;
+        @ExcelUtil.ExcelField(order = 5,value = "带宽")
         private Long bandWidth;
+        @ExcelUtil.ExcelField(order = 6,value = "计费模式")
         private Integer chargeMode;
+        @ExcelUtil.ExcelField(order = 7,value = "线路")
         private Integer ipline;
+        @ExcelUtil.ExcelField(order = 8,value = "创建时间")
         private Timestamp createTime;
+        @ExcelUtil.ExcelField(order = 9,value = "到期时间")
         private Timestamp expireTime;
+        @ExcelUtil.ExcelField(order = 4,value = "使用状态")
         private Integer used;
+        @ExcelUtil.ExcelField(order = 3,value = "区名")
+        private String regionName ;
+        @ExcelUtil.ExcelField(order = 104,value = "是否删除：1已删除,0未删除")
+        private String deleteFlag;
+        @ExcelUtil.ExcelField(order = 102,value = "email")
+        private String email ;
+        @ExcelUtil.ExcelField(order = 101,value = "姓名")
+        private String realname ;
+        @ExcelUtil.ExcelField(order = 103,value = "mobile")
+        private String mobile;
+        @ExcelUtil.ExcelField(order = 100, name = "用户ID")
+        private String userId ;
     }
 
-    @Data
-    public static class RetPublicIpItem extends UserBean implements Item {
-        private String regionName = "区名";
-        private String id = "ID";
-        private String name = "IP名称";
-        private String ip = "IP";
-        private String bandWidth = "带宽";
-        private String chargeMode = "计费模式";
-        private String ipline = "线路";
-        private String createTime = "创建时间";
-        private String expireTime = "到期时间";
-        private String used = "使用状态";
-    }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class HostList extends UserBean {
-        private String regionName;
+        @ExcelUtil.ExcelField(order = 105,value = "ID")
         private String id;
+        @ExcelUtil.ExcelField(order = 4,value = "虚机的后台ID")
         private String openid;
+        @ExcelUtil.ExcelField(order = 104,value = "主机名")
         private String name;
+        @ExcelUtil.ExcelField(order = 6,value = "CPU")
         private Integer cpu;
+        @ExcelUtil.ExcelField(order = 8,value = "内存")
         private BigDecimal memory;
+        @ExcelUtil.ExcelField(order = 10,value = "镜像名称")
         private String imageName;
+        @ExcelUtil.ExcelField(order = 5,value = "网络类型")
         private Integer networkType;
+        @ExcelUtil.ExcelField(order = 3,value = "IP")
         private String ip;
+        @ExcelUtil.ExcelField(order = 2,value = "到期时间")
         private Timestamp expireTime;
+        @ExcelUtil.ExcelField(order = 11,value = "私网IP")
         private String privateNetworkIp;
+        @ExcelUtil.ExcelField(order = 9,value = "创建时间")
         private Timestamp beginTime;
+        @ExcelUtil.ExcelField(order = 7,value = "虚机状态：1可用2关机3创建中4删除中500过期")
         private Integer status;
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class HostListItem extends UserBean implements Item {
-        private String regionName = "区名";
-        private String id = "ID";
-        private String openid = "虚机的后台ID";
-        private String name = "主机名";
-        private String cpu = "CPU";
-        private String memory = "内存";
-        private String imageName = "镜像名称";
-        private String networkType = "网络类型";
-        private String ip = "IP";
-        private String expireTime = "到期时间";
-        private String privateNetworkIp = "私网IP";
-        private String beginTime = "创建时间";
-        private String status = "虚机状态：1可用2关机3创建中4删除中500过期";
+        @ExcelUtil.ExcelField(order = 1,value = "区名")
+        private String regionName ;
+        @ExcelUtil.ExcelField(order = 106,value = "是否删除：1已删除,0未删除")
+        private String deleteFlag;
+        @ExcelUtil.ExcelField(order = 102,value = "email")
+        private String email ;
+        @ExcelUtil.ExcelField(order = 101,value = "姓名")
+        private String realname ;
+        @ExcelUtil.ExcelField(order = 103,value = "mobile")
+        private String mobile;
+        @ExcelUtil.ExcelField(order = 100, name = "用户ID")
+        private String userId ;
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class DiskList extends UserBean {
-        private String regionName;
+        @ExcelUtil.ExcelField(order = 2,value = "ID")
         private String id;
+        @ExcelUtil.ExcelField(order = 7,value = "硬盘的后台ID")
         private String openid;
+        @ExcelUtil.ExcelField(order = 8,value = "状态")
         private Integer status;
+        @ExcelUtil.ExcelField(order = 1,value = "名称")
         private String name;
+        @ExcelUtil.ExcelField(order = 3,value = "类型")
         private Integer type;
-        private Long capacity;
+        @ExcelUtil.ExcelField(order = 10,value = "容量")
+        private Integer capacity;
+        @ExcelUtil.ExcelField(order = 9,value = "盘符")
         private String volumnName;
+        @ExcelUtil.ExcelField(order = 5,value = "使用状态")
         private Integer used;
+        @ExcelUtil.ExcelField(order = 6,value = "到期时间")
         private Timestamp expireTime;
+        @ExcelUtil.ExcelField(order = 3,value = "创建时间")
         private Timestamp beginTime;
+        @ExcelUtil.ExcelField(order = 4,value = "区名")
+        private String regionName ;
+        @ExcelUtil.ExcelField(order = 104,value = "是否删除：1已删除,0未删除")
+        private String deleteFlag;
+        @ExcelUtil.ExcelField(order = 103,value = "email")
+        private String email ;
+        @ExcelUtil.ExcelField(order = 102,value = "姓名")
+        private String realname ;
+        @ExcelUtil.ExcelField(order = 101,value = "mobile")
+        private String mobile;
+        @ExcelUtil.ExcelField(order = 100, name = "用户ID")
+        private String userId ;
     }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class DiskListItem extends UserBean implements Item {
-        private String regionName = "区名";
-        private String id = "ID";
-        private String openid = "硬盘的后台ID";
-        private String status = "状态";
-        private String name = "名称";
-        private String type = "类型";
-        private String capacity = "容量";
-        private String volumnName = "盘符";
-        private String used = "使用状态";
-        private String expireTime = "到期时间";
-        private String beginTime = "创建时间";
-    }
-
-    interface Item {
-    }
-
 
 }
 

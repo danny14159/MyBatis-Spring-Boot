@@ -16,11 +16,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class
 UserBean {
-    protected String deleteFlag = "是否删除，1删除，0未删除";
-    protected String userId = "用户ID";
-    protected String realname = "姓名";
-    protected String email = "email";
-    protected String mobile = "mobile";
+    @ExcelUtil.ExcelField(order = 100, name = "用户ID")
+    private String userId ;
 
     @Override
     public boolean equals(Object obj) {
@@ -32,7 +29,8 @@ UserBean {
         return userId.hashCode();
     }
 
-    UserBean(String userId){
-        this.userId = userId;
-    }
+    public void setRealname(String realname){}
+    public void setEmail(String realname){}
+    public void setMobile(String mobile){}
+    public void setRegionName(String regionName){}
 }

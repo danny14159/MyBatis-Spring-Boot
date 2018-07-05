@@ -64,14 +64,11 @@ public class ExportModule {
     }
 
     static DbHelper[] d = new DbHelper[]{
-            new DbHelper("jdbc:mysql://localhost:8101/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东一区"),
-            new DbHelper("jdbc:mysql://localhost:8102/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东二区"),
-            new DbHelper("jdbc:mysql://localhost:8103/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东三区"),
             new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),
-            new DbHelper("jdbc:mysql://localhost:8106/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "上海一区"),
             new DbHelper("jdbc:mysql://localhost:8109/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二交易云"),
             new DbHelper("jdbc:mysql://localhost:8108/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二开发云"),
-            new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南一交易云")
+            new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "西南一交易云"),
+            new DbHelper("jdbc:mysql://localhost:8111/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "西南一开发云"),
     };
 
     public static void main1(String[] args) {

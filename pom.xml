@@ -69,6 +69,19 @@
             <artifactId>druid</artifactId>
             <version>1.0.11</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
+        <!-- https://mvnrepository.com/artifact/com.sun.jna/jna -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+
         <!--Mybatis-->
         <dependency>
             <groupId>org.mybatis</groupId>

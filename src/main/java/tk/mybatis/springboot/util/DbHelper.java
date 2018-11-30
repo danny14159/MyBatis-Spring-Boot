@@ -50,7 +50,7 @@ public class DbHelper {
         Connection con = null;
         try {
             con = DriverManager.getConnection(url, username, password);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

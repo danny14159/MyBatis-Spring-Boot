@@ -64,7 +64,7 @@ public class ExportModule {
     }
 
     static DbHelper[] d = new DbHelper[]{
-            new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),
+            //new DbHelper("jdbc:mysql://localhost:8104/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "华东四区"),
             new DbHelper("jdbc:mysql://localhost:8109/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二交易云"),
             new DbHelper("jdbc:mysql://localhost:8108/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "read123QWE", "西南二开发云"),
             new DbHelper("jdbc:mysql://localhost:8110/nsc_console?useUnicode=true&characterEncoding=utf8&useSSL=false", "nscread", "nread!@#QWE", "西南一交易云"),
@@ -185,7 +185,7 @@ public class ExportModule {
             Set<RetPublicIp> retPublicIps = i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
                     "    d.id as id, d.name as name, d.ip as ip, d.band_width as bandWidth, d.charge_mode as chargeMode,\n" +
                     "    d.ipline as ipline, d.create_time as createTime, d.update_time as updateTime,d.expire_time as expireTime,\n" +
-                    "    d.no as no, d.user_id as user_id, d.`desc` as `desc`, d.openid as openid, d.delete_flag as deleteFlag,\n" +
+                    "    d.no as no, d.user_id as user_id, d.`desc` as `desc`,d.update_time as updateTime, d.openid as openid, d.delete_flag as deleteFlag,\n" +
                     "    rs.self_status as status,\n" +
                     "    rs.used as used,\n" +
                     "      ifnull(ifnull((host.name),(load_balance.name)),(router.name)) as resource,\n" +
@@ -225,6 +225,7 @@ public class ExportModule {
                     "        rs.self_status as status,\n" +
                     "        rs.used as used,\n" +
                     "        host.expire_time as expireTime,\n" +
+                    "        host.update_time as updateTime,\n" +
                     "        host.begin_time as beginTime,\n" +
                     "        host.version as version,rs.openid\n" +
                     "        from host\n" +
@@ -249,7 +250,7 @@ public class ExportModule {
             Set<DiskList> diskLists = i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,d.delete_flag as deleteFlag,\n" +
                     "    d.id as id, d.name as name, d.`desc` as `desc`, d.type as type, d.capacity as capacity,\n" +
                     "    d.tag_name as tagName, d.user_id as user_id, d.create_time as createTime,d.begin_time as beginTime,\n" +
-                    "    d.update_time as updateTime, d.no as `no`, d.expire_time as expireTime,\n" +
+                    "    d.update_time as updateTime, d.no as `no`,d.update_time as updateTime, d.expire_time as expireTime,\n" +
                     "    rs.self_status as status,\n" +
                     "    rs.used as used,rs.openid,\n" +
                     "    version,\n" +
@@ -317,6 +318,8 @@ public class ExportModule {
         private Integer ipline;
         @ExcelUtil.ExcelField(order = 8,value = "创建时间")
         private Timestamp createTime;
+        @ExcelUtil.ExcelField(order = 1000,value = "更新时间")
+        private Timestamp updateTime;
         @ExcelUtil.ExcelField(order = 9,value = "到期时间")
         private Timestamp expireTime;
         @ExcelUtil.ExcelField(order = 4,value = "使用状态")
@@ -362,6 +365,8 @@ public class ExportModule {
         private String privateNetworkIp;
         @ExcelUtil.ExcelField(order = 9,value = "创建时间")
         private Timestamp beginTime;
+        @ExcelUtil.ExcelField(order = 1000,value = "更新时间")
+        private Timestamp updateTime;
         @ExcelUtil.ExcelField(order = 7,value = "虚机状态：1可用2关机3创建中4删除中500过期")
         private Integer status;
         @ExcelUtil.ExcelField(order = 1,value = "区名")
@@ -402,6 +407,8 @@ public class ExportModule {
         private Timestamp expireTime;
         @ExcelUtil.ExcelField(order = 3,value = "创建时间")
         private Timestamp beginTime;
+        @ExcelUtil.ExcelField(order = 10000,value = "更新时间")
+        private Timestamp updateTime;
         @ExcelUtil.ExcelField(order = 4,value = "区名")
         private String regionName ;
         @ExcelUtil.ExcelField(order = 104,value = "是否删除：1已删除,0未删除")

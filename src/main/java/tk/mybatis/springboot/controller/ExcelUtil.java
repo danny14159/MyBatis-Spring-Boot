@@ -84,7 +84,7 @@ public class ExcelUtil {
                 ExcelField o1Annotation = o1.getAnnotation(ExcelField.class);
                 ExcelField o2Annotation = o2.getAnnotation(ExcelField.class);
                 if(o1Annotation != null && o2Annotation!= null){
-                    return o1Annotation.order() - o2Annotation.order();
+                    return new Float(o1Annotation.order()).compareTo(new Float(o2Annotation.order()));
                 }
                 return 0;
             });
@@ -156,7 +156,7 @@ public class ExcelUtil {
     @Retention(RetentionPolicy.RUNTIME)
     @Inherited
     public @interface ExcelField{
-        int order() default 1;
+        float order() default 1;
         String value() default "";
         String name() default "";
     }

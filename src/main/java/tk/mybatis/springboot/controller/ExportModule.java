@@ -184,8 +184,9 @@ public class ExportModule {
             }
             Set<RetPublicIp> retPublicIps = i.executeQuery("SELECT '" + i.getRegionName() + "' regionName,d.user_id userId, \n" +
                     "    d.id as id, d.name as name, d.ip as ip, d.band_width as bandWidth, d.charge_mode as chargeMode,\n" +
-                    "    d.ipline as ipline, d.create_time as createTime, d.update_time as updateTime,d.expire_time as expireTime,\n" +
-                    "    d.no as no, d.user_id as user_id, d.`desc` as `desc`,d.update_time as updateTime, d.openid as openid, d.delete_flag as deleteFlag,\n" +
+                    "    d.ipline as ipline, d.create_time as createTime, d.update_time as updateTime,d.update_time as updateTime,\n" +
+                    "    d.no as no, d.user_id as user_id, d.`desc` as `desc`," +
+                    "if(d.delete_flag=1,d.update_time,d.expire_time) as expireTime, d.openid as openid, d.delete_flag as deleteFlag,\n" +
                     "    rs.self_status as status,\n" +
                     "    rs.used as used,\n" +
                     "      ifnull(ifnull((host.name),(load_balance.name)),(router.name)) as resource,\n" +
@@ -224,7 +225,7 @@ public class ExportModule {
                     "         end) as privateNetworkIp,\n" +
                     "        rs.self_status as status,\n" +
                     "        rs.used as used,\n" +
-                    "        host.expire_time as expireTime,\n" +
+                    "        if(host.delete_flag=1,host.update_time,host.expire_time) as expireTime,\n" +
                     "        host.update_time as updateTime,\n" +
                     "        host.begin_time as beginTime,\n" +
                     "        host.version as version,rs.openid\n" +
@@ -250,7 +251,8 @@ public class ExportModule {
             Set<DiskList> diskLists = i.executeQuery("select '" + i.getRegionName() + "'regionName,d.user_id userId,d.delete_flag as deleteFlag,\n" +
                     "    d.id as id, d.name as name, d.`desc` as `desc`, d.type as type, d.capacity as capacity,\n" +
                     "    d.tag_name as tagName, d.user_id as user_id, d.create_time as createTime,d.begin_time as beginTime,\n" +
-                    "    d.update_time as updateTime, d.no as `no`,d.update_time as updateTime, d.expire_time as expireTime,\n" +
+                    "    d.update_time as updateTime, d.no as `no`,d.update_time as updateTime, " +
+                    "   if(d.delete_flag=1,d.update_time,d.expire_time) as expireTime,\n" +
                     "    rs.self_status as status,\n" +
                     "    rs.used as used,rs.openid,\n" +
                     "    version,\n" +
